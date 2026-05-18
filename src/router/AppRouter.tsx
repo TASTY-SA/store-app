@@ -1,0 +1,17 @@
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { Login } from '../features/auth'
+import { CatalogoHomePage } from '../features/catalogo'
+
+export function AppRouter() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Navigate to="/catalogo" replace />} />
+        <Route path="/catalogo" element={<CatalogoHomePage />} />
+        <Route path="/login" element={<Login />} />
+
+        <Route path="*" element={<Navigate to="/catalogo" replace />} />
+      </Routes>
+    </BrowserRouter>
+  )
+}
