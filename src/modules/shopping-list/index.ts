@@ -1,6 +1,0 @@
-export { ShoppingListPage } from './components/ShoppingListPage'
-export { ProductForm } from './components/ProductForm'
-export { ProductItem } from './components/ProductItem'
-export { useProducts } from './hooks/useProducts'
-export { productsService } from './services/productsService'
-export type { CreateProductInput, Product } from './types'

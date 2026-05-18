@@ -1,40 +1,42 @@
 import { Link, useLocation } from "react-router-dom";
 
 const navLinks = [
-  { label: "Productos", href: "/"},
-  { label: "Categorías", href: "/categorias" },
-  { label: "Ingredientes", href: "/ingredientes" },
+  { label: "Inicio", href: "/catalogo", hash: "#hero" },
+  { label: "Bloques", href: "/catalogo", hash: "#bloques" },
+  { label: "Pasos", href: "/catalogo", hash: "#pasos" },
 ];
 
 export const NavBar = () => {
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
+
+  const currentHash = hash || "#hero";
 
   return (
-    <nav className="sticky top-0 z-50 w-full bg-hunter border-b border-fern backdrop-blur-md">
-      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-3 group transition-all">
-          <div className="w-10 h-10 bg-fern rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-            <span className="text-black font-black text-lg">A</span>
+    <nav className="sticky top-0 z-50 w-full border-b border-[#47aa66]/20 bg-[#fdfbd7]/90 backdrop-blur-xl">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
+        <Link to="/catalogo" className="flex items-center gap-3 transition-transform duration-200 hover:scale-[1.02]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#47aa66]/25 bg-[#47aa66] text-sm font-black text-[#fdfbd7] shadow-lg shadow-[#47aa66]/20">
+            C
           </div>
-          <span className="text-black font-bold text-lg tracking-tight">APP</span>
+          <span className="text-sm font-semibold uppercase tracking-[0.28em] text-[#245433]">Catalogo</span>
         </Link>
 
         <ul className="flex items-center gap-1">
           {navLinks.map((link) => {
-            const isActive = pathname === link.href;
+            const isActive = pathname === link.href && currentHash === link.hash;
             return (
               <li key={link.href}>
                 <Link
-                  to={link.href}
-                  className={`relative px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                  to={{ pathname: link.href, hash: link.hash }}
+                  className={`relative rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200 ${
                     isActive
-                      ? "bg-fern text-black"
-                      : "text-black hover:text-black hover:bg-fern/40"
+                      ? "bg-[#47aa66] text-[#fdfbd7]"
+                      : "text-[#245433]/80 hover:bg-[#47aa66]/10 hover:text-[#245433]"
                   }`}
                 >
                   {link.label}
                   {isActive && (
-                    <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-lime-cream rounded-full" />
+                    <span className="absolute bottom-0.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-[#7b1f2a]" />
                   )}
                 </Link>
               </li>

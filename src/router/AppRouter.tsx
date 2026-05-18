@@ -1,22 +1,17 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
-import { AuthProvider, LoginPage, PrivateRoute } from '../modules/auth'
-import { ShoppingListPage } from '../modules/shopping-list'
+import { Login } from '../features/auth'
+import { CatalogoHomePage } from '../features/catalogo'
 
 export function AppRouter() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Navigate to="/catalogo" replace />} />
+        <Route path="/catalogo" element={<CatalogoHomePage />} />
+        <Route path="/login" element={<Login />} />
 
-          <Route element={<PrivateRoute />}>
-            <Route path="/" element={<Navigate to="/shopping" replace />} />
-            <Route path="/shopping" element={<ShoppingListPage />} />
-          </Route>
-
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+        <Route path="*" element={<Navigate to="/catalogo" replace />} />
+      </Routes>
+    </BrowserRouter>
   )
 }

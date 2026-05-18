@@ -1,9 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --color-evergreen:  #132a13;
-  --color-hunter:     #31572c;
-  --color-fern:       #4f772d;
-  --color-palm:       #90a955;
-  --color-lime-cream: #ecf39e;
+  --color-evergreen:  #245433;
+  --color-hunter:     #47aa66;
+  --color-fern:       #3f9558;
+  --color-palm:       #7b1f2a;
+  --color-lime-cream: #fdfbd7;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: #fdfbd7;
+  color: #245433;
+  font-family: 'Epilogue', sans-serif;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: #47aa66;
+  color: #fdfbd7;
 }

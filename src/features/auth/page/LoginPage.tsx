@@ -6,13 +6,13 @@ export const Login = () => {
   const { login } = useAuthStore();
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState('')
+  const [user, setUser] = useState('')
   const [password, setPassword] = useState('')
 
 
   async function onSubmit(event: SyntheticEvent<HTMLFormElement>) {
     event.preventDefault()
-    const ok = await login({ email, password })
+    const ok = await login({ user, password })
     if (!ok) {
       console.log('Credenciales invalidas')
       return
@@ -22,8 +22,8 @@ export const Login = () => {
   return (
     <form onSubmit={onSubmit}>
       <input
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
+        value={user}
+        onChange={(e) => setUser(e.target.value)}
         type="text"
         placeholder="ingresa tu user"
       />
