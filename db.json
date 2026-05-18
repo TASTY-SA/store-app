@@ -1,0 +1,10 @@
+{
+  "products": [
+    {
+      "name": "Hola",
+      "done": false,
+      "id": "px4R_mWIH7Q"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}
