@@ -42,9 +42,9 @@ export const TarjetasPromos = () => {
         
         {/* Bloque Superior: Textos */}
         <div className="space-y-4">
-          <span className="text-xs uppercase tracking-widest text-[#241A00] font-bold">PROMO DEL DIA</span>
-          <h2 className="text-3xl font-black tracking-tight">{productoPromo.nombre}</h2>
-          <p className="text-sm text-[#241A00]/80 leading-relaxed">
+          <span className="text-sm uppercase tracking-widest text-[#241A00] font-bold">PROMO DEL DIA</span>
+          <h2 className="text-8xl my-3 font-black tracking-tight">{productoPromo.nombre}</h2>
+          <p className="text-xl text-[#241A00]/80 leading-relaxed">
             {productoPromo.descripcion || "Sin descripción disponible."}
           </p>
         </div>
