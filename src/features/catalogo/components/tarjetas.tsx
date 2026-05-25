@@ -17,7 +17,8 @@ export const TarjetasPromos = () => {
   }
 
   // 2. Ahora que sabemos con seguridad que 'productos.data' tiene al menos 1 elemento:
-  const productoPromo = productos.data[0];
+  const productosespeciales = [1,2,3,4,5,6,7];
+  const productoPromo = productos.data[Math.floor(Math.random() * productosespeciales.length)];
 
   const handleBuy = () => {
     if (!isAuthenticated) {
@@ -52,14 +53,14 @@ export const TarjetasPromos = () => {
         {/* Bloque Inferior: Precio + Botón alineados en fila horizontal */}
         <div className="flex items-center justify-between w-full border-t border-[#fdfbd7]/10 pt-6">
           <div className="flex flex-col">
-            <span className="text-sm text-[#241A00]/60 uppercase">Precio</span>
-            <span className="text-3xl font-black text-[#1F8848] mx-4">${productoPromo.precio_base}</span>
+            <span className="text-xl text-[#241A00]/60 uppercase">Precio</span>
+            <span className="text-5xl font-black text-[#1F8848] mx-5">${productoPromo.precio_base}</span>
           </div>
           
           <button 
             onClick={handleBuy}
             disabled={added}
-            className={`text-white px-6 py-3 rounded-xl font-bold transition-all transform hover:scale-105 active:scale-95 shadow-lg duration-300 ${
+            className={`text-white px-9 py-3 rounded-xl font-bold transition-all transform hover:scale-105 active:scale-95 shadow-lg duration-300 ${
               added 
                 ? "bg-emerald-600 shadow-emerald-600/20 cursor-default scale-100" 
                 : "bg-[#1F8848] hover:bg-[#40A360] shadow-[#ff4e8d]/20"
