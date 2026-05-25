@@ -1,11 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import type { IProducto } from "../../productos/IProducto";
-import {
-  getProductos,
-} from "../../productos/services/producto.services";
-import { getCategorias } from "../../categoria/services/categoria.services";
-import { getIngredientes } from "../../ingredientes/services/ingrediente.services";
+import { getProductos } from "../../productos/services/producto.services";
 
 export const useProductos = () => {
   const [currentPage] = useState(1);

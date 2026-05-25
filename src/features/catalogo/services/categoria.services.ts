@@ -1,4 +1,4 @@
-import type { ICategoria } from "../index";
+import type { ICategoria } from "../../categoria/ICategoria";
 
 const BASE_URL = `${import.meta.env.VITE_API_URL}/categorias`;
 

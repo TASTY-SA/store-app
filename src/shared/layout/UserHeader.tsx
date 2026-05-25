@@ -11,15 +11,11 @@ export function UserHeader() {
       <div>
         <p className="text-sm text-zinc-500">Sesión iniciada</p>
         <p className="text-lg font-semibold text-zinc-900">
-          {user.full_name}{" "}
-          <span className="text-sm font-normal text-zinc-500">
-            (@{user.username})
-          </span>
+          {user.full_name || user.user}
         </p>
-        <p className="text-sm text-zinc-500">
-          {user.email} · rol{" "}
-          <span className="font-medium text-violet-600">{user.role}</span>
-        </p>
+        {user.email && (
+          <p className="text-sm text-zinc-500">{user.email}</p>
+        )}
       </div>
       <button
         type="button"

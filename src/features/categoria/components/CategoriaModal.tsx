@@ -18,8 +18,8 @@ export const CategoriaModal = ({ isOpen, onClose, onSubmit, categoriasDisponible
   useEffect(() => {
     if (categoriaParaEditar) {
       setNombre(categoriaParaEditar.nombre);
-      setDescripcion(categoriaParaEditar.descripcion);
-      setImagenUrl(categoriaParaEditar.imagen_url);
+      setDescripcion(categoriaParaEditar.descripcion || '');
+      setImagenUrl(categoriaParaEditar.imagen_url || '');
       setParentId(categoriaParaEditar.parent_id === null ? '' : String(categoriaParaEditar.parent_id));
     } else {
       setNombre('');
@@ -38,7 +38,7 @@ export const CategoriaModal = ({ isOpen, onClose, onSubmit, categoriasDisponible
       nombre,
       descripcion,
       imagen_url: imagenUrl,
-    }as ICategoria);
+    } as ICategoria);
   };
 
   const parentCandidates = categoriasDisponibles.filter((categoria) => categoria.id !== categoriaParaEditar?.id);
@@ -63,7 +63,7 @@ export const CategoriaModal = ({ isOpen, onClose, onSubmit, categoriasDisponible
               className="w-full bg-brand-gray/20 border border-brand-gray/50 rounded p-3 text-brand-cream focus:border-neon-amber outline-none transition-all"
             />
           </div>
-          
+
           <div>
             <label className="block text-brand-cream/60 text-xs uppercase tracking-widest mb-2">Descripción</label>
             <textarea

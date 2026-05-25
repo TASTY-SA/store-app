@@ -8,23 +8,26 @@ import { useState } from "react";
 export function LoginPage() {
   const navigate = useNavigate();
   const login = useAuthStore((s) => s.login);
-  const error = useAuthStore((s) => s.error);
-  const setError = useAuthStore((s) => s.setError);
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError(null);
+    setLocalError(null);
 
     try {
-      await login(username, password);
+      const result = login({ user: username, password });
+      if (!result) {
+        setLocalError("Credenciales inválidas");
+        return;
+      }
       navigate("/");
-    } catch {
-      // El error ya está en el store
+    } catch (err: any) {
+      setLocalError(err?.message || "Error al iniciar sesión");
     } finally {
       setIsLoading(false);
     }
@@ -35,9 +38,9 @@ export function LoginPage() {
       <h1 className="text-3xl font-bold">Iniciar Sesión</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {error && (
+        {localError && (
           <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
-            {error}
+            {localError}
           </div>
         )}
 

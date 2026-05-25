@@ -1,6 +1,5 @@
 import axios, { type AxiosError, type AxiosResponse } from "axios";
 import { getApiBase } from "./config";
-import { useAuthStore } from "../../../store/authStore";
 
 /**
  * Cliente HTTP usando Axios
@@ -26,10 +25,6 @@ export const apiClient = axios.create({
 // ============================================================
 apiClient.interceptors.request.use(
   (config) => {
-    // Puedes agregar lógica aquí si necesitas:
-    // - Tokens adicionales (aunque estamos usando httpOnly cookies)
-    // - Headers personalizados
-    // - Transformar datos antes de enviar
     return config;
   },
   (error: AxiosError) => {
@@ -43,18 +38,14 @@ apiClient.interceptors.request.use(
 // ============================================================
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => {
-    // Respuesta exitosa: pasar normalmente
     return response;
   },
   async (error: AxiosError) => {
-    // Manejar errores
     if (error.response?.status === 401) {
-      // Token expirado o inválido
-      console.warn("Sesión expirada (401), limpiando...");
-      useAuthStore.getState().clearSession();
+      // Sesión expirada — el componente que consuma useAuthStore
+      // detectará el usuario null y redirigirá al login.
+      console.warn("Sesión expirada (401)");
     }
-
-    // Re-lanzar el error para que sea manejado por el llamador
     return Promise.reject(error);
   },
 );

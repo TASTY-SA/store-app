@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { Login } from '../features/auth'
 import { CatalogoHomePage } from '../features/catalogo'
+import { CarritoHomePage } from '../features/carrito'
 
 export function AppRouter() {
   return (
@@ -9,9 +10,11 @@ export function AppRouter() {
         <Route path="/" element={<Navigate to="/catalogo" replace />} />
         <Route path="/catalogo" element={<CatalogoHomePage />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/carrito" element={<CarritoHomePage />} />
 
         <Route path="*" element={<Navigate to="/catalogo" replace />} />
       </Routes>
     </BrowserRouter>
   )
 }
+

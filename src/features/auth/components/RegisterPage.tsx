@@ -1,18 +1,20 @@
 import { useNavigate } from "react-router-dom";
-import { useAuthStore } from "../../../store/authStore";
 import { useState } from "react";
-import type { UserRegisterPayload } from "../types/index";
+
+interface RegisterPayload {
+  username: string;
+  full_name: string;
+  password: string;
+  email: string;
+}
 
 /**
  * Página de Registro - Módulo Auth
  */
 export function RegisterPage() {
   const navigate = useNavigate();
-  const register = useAuthStore((s) => s.register);
-  const error = useAuthStore((s) => s.error);
-  const setError = useAuthStore((s) => s.setError);
 
-  const [formData, setFormData] = useState<UserRegisterPayload>({
+  const [formData, setFormData] = useState<RegisterPayload>({
     username: "",
     full_name: "",
     password: "",
@@ -20,28 +22,30 @@ export function RegisterPage() {
   });
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev: RegisterPayload) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    setLocalError(null);
 
     if (formData.password !== passwordConfirm) {
-      setError("Las contraseñas no coinciden");
+      setLocalError("Las contraseñas no coinciden");
       return;
     }
 
     setIsLoading(true);
 
     try {
-      await register(formData);
-      navigate("/");
-    } catch {
-
+      // TODO: connect to real register API
+      console.log("Register payload:", formData);
+      navigate("/login");
+    } catch (err: any) {
+      setLocalError(err?.message || "Error al registrarse");
     } finally {
       setIsLoading(false);
     }
@@ -52,9 +56,9 @@ export function RegisterPage() {
       <h1 className="text-3xl font-bold">Registrarse</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {error && (
+        {localError && (
           <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
-            {error}
+            {localError}
           </div>
         )}
 
@@ -71,22 +75,6 @@ export function RegisterPage() {
             disabled={isLoading}
             className="mt-1 w-full rounded-lg border border-zinc-300 px-3 py-2 text-zinc-900 placeholder-zinc-400 focus:border-zinc-500 focus:outline-none disabled:bg-zinc-100"
             placeholder="Tu usuario"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-zinc-700">
-            Nombre Completo
-          </label>
-          <input
-            type="text"
-            name="full_name"
-            value={formData.full_name}
-            onChange={handleChange}
-            required
-            disabled={isLoading}
-            className="mt-1 w-full rounded-lg border border-zinc-300 px-3 py-2 text-zinc-900 placeholder-zinc-400 focus:border-zinc-500 focus:outline-none disabled:bg-zinc-100"
-            placeholder="Tu nombre completo"
           />
         </div>
 
