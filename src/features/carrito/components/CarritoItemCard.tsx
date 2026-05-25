@@ -25,7 +25,7 @@ export function CarritoItemCard({
     <div className="relative flex flex-col gap-4 rounded-2xl border border-[#e8e5c0] bg-[#fdfbd7]/50 p-4 transition-all hover:shadow-md sm:flex-row sm:items-center">
       {/* Botón eliminar (X) */}
       <button
-        onClick={() => onRemove(producto.id)}
+        onClick={() => producto.id !== undefined && onRemove(producto.id)}
         className="absolute top-3 right-3 text-[#245433]/40 transition-colors hover:text-red-600 focus:outline-none"
         aria-label="Eliminar producto"
       >
@@ -87,7 +87,7 @@ export function CarritoItemCard({
           {/* Controles de cantidad */}
           <div className="flex items-center rounded-xl border border-[#c5c89a] bg-white px-2 py-1 shadow-sm">
             <button
-              onClick={() => onUpdateQuantity(producto.id, cantidad - 1)}
+              onClick={() => producto.id !== undefined && onUpdateQuantity(producto.id, cantidad - 1)}
               className="flex h-6 w-6 items-center justify-center text-[#245433] hover:text-red-600 disabled:opacity-40"
               disabled={cantidad <= 1}
             >
@@ -99,7 +99,7 @@ export function CarritoItemCard({
               {cantidad}
             </span>
             <button
-              onClick={() => onUpdateQuantity(producto.id, cantidad + 1)}
+              onClick={() => producto.id !== undefined && onUpdateQuantity(producto.id, cantidad + 1)}
               className="flex h-6 w-6 items-center justify-center text-[#245433] hover:text-[#1F8848]"
             >
               <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -114,7 +114,7 @@ export function CarritoItemCard({
         <EditItemModal
           item={item}
           onClose={() => setIsEditing(false)}
-          onSave={(newNotes) => onUpdateNotes(producto.id, newNotes)}
+          onSave={(newNotes) => producto.id !== undefined && onUpdateNotes(producto.id, newNotes)}
         />
       )}
     </div>

@@ -4,7 +4,7 @@ import { useAuthStore } from "../../store/authStore";
 
 const navLinks = [
   { label: "Menu", href: "/catalogo", hash: "#hero" },
-  { label: "Pedidos", href: "/catalogo", hash: "#bloques" },
+  { label: "Pedidos", href: "/pedidos", hash: "" },
   { label: "Carrito", href: "/carrito", hash: "" },
 ];
 
@@ -28,9 +28,10 @@ export const NavBar = () => {
         <div className="flex items-center gap-4">
           <ul className="flex items-center gap-1">
             {navLinks.map((link) => {
-              const isActive = link.href === "/carrito"
-                ? pathname === "/carrito"
-                : pathname === link.href && currentHash === link.hash;
+              const isActive =
+                link.href === "/catalogo"
+                  ? pathname === "/catalogo" && currentHash === link.hash
+                  : pathname === link.href;
               return (
                 <li key={link.label}>
                   <Link

@@ -7,6 +7,13 @@
   --color-fern:       #3f9558;
   --color-palm:       #7b1f2a;
   --color-lime-cream: #fdfbd7;
+
+  --animate-fade-in: fadeIn 0.25s ease-out;
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 }
 
 html {

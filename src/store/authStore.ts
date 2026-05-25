@@ -14,7 +14,7 @@ interface UserPublic {
   full_name: string
   email: string
   disabled: boolean
-  roles: { codigo: str; nombre: str; descripcion?: string }[]
+  roles: { codigo: string; nombre: string; descripcion?: string }[]
 }
 
 let currentState: AuthState
@@ -108,6 +108,7 @@ const checkAuth = async (): Promise<boolean> => {
 currentState = {
   user: null,
   isAuthenticated: false,
+  token: "",
   login,
   logout,
   checkAuth,

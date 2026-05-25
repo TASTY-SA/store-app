@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { Login, RegisterPage } from '../features/auth'
 import { CatalogoHomePage } from '../features/catalogo'
 import { CarritoHomePage } from '../features/carrito'
+import { MisPedidosPage } from '../features/pedido'
 
 export function AppRouter() {
   return (
@@ -12,6 +13,7 @@ export function AppRouter() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/carrito" element={<CarritoHomePage />} />
+        <Route path="/pedidos" element={<MisPedidosPage />} />
         <Route path="*" element={<Navigate to="/catalogo" replace />} />
       </Routes>
     </BrowserRouter>

@@ -3,7 +3,7 @@ export type UserRole = "ADMIN" | "CLIENTE";
 export interface IUser {
   id: number;
   user: string;
-  password: string;
+  password?: string;
   username?: string;
   email?: string;
   full_name?: string;
@@ -25,9 +25,9 @@ export interface AuthState {
   token: string;
   isLoading?: boolean;
   error?: string | null;
-  login: (credentials: { user: string; password: string }) => IUser | null;
+  login: (credentials: { user: string; password: string }) => Promise<IUser | null>;
   logout: VoidFunction;
-  checkAuth: () => boolean;
+  checkAuth: () => Promise<boolean>;
   setError?: (err: string | null) => void;
   register?: (payload: UserRegisterPayload) => Promise<IUser>;
   clearSession?: () => void;
