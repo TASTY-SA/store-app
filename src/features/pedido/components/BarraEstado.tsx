@@ -53,7 +53,7 @@ export function BarraEstado({ estadoActual }: BarraEstadoProps) {
                 {/* Círculo del paso */}
                 <div
                   className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 relative ${
-                    isCompleted || isActive ? 'bg-[#1F8848]' : 'bg-[#f7f6d8]'
+                    isCompleted || isActive ? 'bg-[#9ED496]' : 'bg-[#f7f6d8]'
                   } ${
                     isActive
                       ? 'border-[3px] border-[#47aa66] shadow-[0_0_0_4px_rgba(71,170,102,0.2)]'

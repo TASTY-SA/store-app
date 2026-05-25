@@ -54,20 +54,9 @@ export function MisPedidosPage() {
           <div>
             <h1 className="m-0 text-3xl sm:text-4xl font-black text-[#245433] tracking-tight">Mis Pedidos</h1>
             <p className="mt-2 text-sm text-[#245433]/65 max-w-[520px] leading-relaxed">
-              Seguí el estado de tus pedidos en tiempo real. Los cambios del backend se actualizan automáticamente.
+              Seguí el estado de tus pedidos en tiempo real.
             </p>
           </div>
-          <button
-            onClick={refetch}
-            className="inline-flex items-center gap-1.5 bg-white border-1.5 border-[#c5c89a] rounded-xl px-4 py-2.5 text-xs font-bold text-[#245433] cursor-pointer hover:border-[#1F8848] hover:text-[#1F8848] hover:bg-[#e8f5ec] hover:-translate-y-0.5 active:scale-95 transition-all duration-200 shrink-0 whitespace-nowrap"
-            title="Actualizar pedidos"
-            id="btn-refetch-pedidos"
-          >
-            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582M20 20v-5h-.581M5.636 15.364A9 9 0 1118.364 8.636" />
-            </svg>
-            Actualizar
-          </button>
         </div>
 
         {/* Error */}

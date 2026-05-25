@@ -48,7 +48,7 @@ export function ResumenPedido({
   };
 
   const discountAmount = Math.round(subtotal * (discountPercent / 100));
-  const total = subtotal - discountAmount + deliveryFee + taxesAndFees;
+  const total = subtotal - discountAmount;
 
   return (
     <div className="rounded-3xl border border-[#e8e5c0] bg-[#fdfbd7]/50 p-6 shadow-sm">
@@ -71,15 +71,8 @@ export function ResumenPedido({
           </div>
         )}
 
-        <div className="flex justify-between">
-          <span>Tarifa de Entrega</span>
-          <span className="font-semibold">{subtotal > 0 ? fmt(deliveryFee) : fmt(0)}</span>
-        </div>
-
-        <div className="flex justify-between">
-          <span>Impuestos y Tarifas</span>
-          <span className="font-semibold">{subtotal > 0 ? fmt(taxesAndFees) : fmt(0)}</span>
-        </div>
+        
+      
       </div>
 
       <div className="mt-5">
