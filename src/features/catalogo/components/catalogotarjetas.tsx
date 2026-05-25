@@ -4,6 +4,8 @@ import apiClient from "../../auth/services/axiosInstance";
 import type { IProducto } from "../../productos/IProducto";
 import type { ICategoria } from "../../categoria/ICategoria";
 import { useCartStore } from "../../../store/cartStore";
+import { useAuthStore } from "../../../store/authStore";
+import { RequireAuthModal } from "../../auth/components/RequireAuthModal";
 
 // ─── API calls ────────────────────────────────────────────────────────────────
 
@@ -30,9 +32,15 @@ const fmt = (n: number) =>
 
 function ProductCard({ producto }: { producto: IProducto }) {
   const addToCart = useCartStore((s) => s.addToCart);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const [added, setAdded] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const handleAdd = () => {
+    if (!isAuthenticated) {
+      setShowAuthModal(true);
+      return;
+    }
     addToCart(producto, 1);
     setAdded(true);
     setTimeout(() => setAdded(false), 1500);
@@ -106,7 +114,12 @@ function ProductCard({ producto }: { producto: IProducto }) {
           )}
         </button>
       </div>
+
+      {showAuthModal && (
+        <RequireAuthModal onClose={() => setShowAuthModal(false)} />
+      )}
     </div>
+
   );
 }
 

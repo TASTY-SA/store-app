@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useCartStore } from "../../../store/cartStore";
+import { useAuthStore } from "../../../store/authStore";
 import { NavBar } from "../../../shared/NavBar/NavBar";
 import { CarritoItemCard } from "../components/CarritoItemCard";
 import { ResumenPedido } from "../components/ResumenPedido";
+import { RequireAuthModal } from "../../auth/components/RequireAuthModal";
 
 export function CarritoHomePage() {
   const {
@@ -15,10 +17,16 @@ export function CarritoHomePage() {
     subtotal,
     totalItems,
   } = useCartStore();
+  const { isAuthenticated } = useAuthStore();
 
   const [checkoutSuccess, setCheckoutSuccess] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const handleCheckout = () => {
+    if (!isAuthenticated) {
+      setShowAuthModal(true);
+      return;
+    }
     // Simular el éxito de la compra
     setCheckoutSuccess(true);
     clearCart();
@@ -29,12 +37,13 @@ export function CarritoHomePage() {
       {/* Navbar */}
       <NavBar />
 
+
       {/* Main Content */}
       <main className="flex-1 mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
         {checkoutSuccess ? (
           /* Modal/Mensaje de éxito del pedido */
           <div className="flex flex-col items-center justify-center text-center py-16 px-4 bg-[#fdfbd7]/60 rounded-3xl border border-[#e8e5c0] shadow-sm max-w-2xl mx-auto animate-fade-in">
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#1F8848]/10 text-[#1F8848] mb-6 border border-[#1F8848]/20 animate-bounce">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#1F8848]/10 text-[#1F8848] mb-6 border border-[#1F8848]/20 ">
               <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
@@ -119,6 +128,11 @@ export function CarritoHomePage() {
           </>
         )}
       </main>
+      {showAuthModal && (
+        <RequireAuthModal onClose={() => setShowAuthModal(false)} />
+      )}
     </div>
   );
 }
+
+

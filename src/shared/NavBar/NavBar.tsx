@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { useCartStore } from "../../store/cartStore";
+import { useAuthStore } from "../../store/authStore";
 
 const navLinks = [
   { label: "Menu", href: "/catalogo", hash: "#hero" },
@@ -10,6 +11,7 @@ const navLinks = [
 export const NavBar = () => {
   const { pathname, hash } = useLocation();
   const totalItems = useCartStore((s) => s.totalItems);
+  const { isAuthenticated, user, logout } = useAuthStore();
 
   const currentHash = hash || "#hero";
 
@@ -23,41 +25,67 @@ export const NavBar = () => {
           <span className="text-sm font-semibold uppercase tracking-[0.28em] text-[#245433]">Catalogo</span>
         </Link>
 
-        <ul className="flex items-center gap-1">
-          {navLinks.map((link) => {
-            const isActive = link.href === "/carrito"
-              ? pathname === "/carrito"
-              : pathname === link.href && currentHash === link.hash;
-            return (
-              <li key={link.label}>
-                <Link
-                  to={{ pathname: link.href, hash: link.hash }}
-                  className={`relative flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200 ${
-                    isActive
-                      ? "bg-[#47aa66] text-[#fdfbd7]"
-                      : "text-[#245433]/80 hover:bg-[#47aa66]/10 hover:text-[#245433]"
-                  }`}
+        <div className="flex items-center gap-4">
+          <ul className="flex items-center gap-1">
+            {navLinks.map((link) => {
+              const isActive = link.href === "/carrito"
+                ? pathname === "/carrito"
+                : pathname === link.href && currentHash === link.hash;
+              return (
+                <li key={link.label}>
+                  <Link
+                    to={{ pathname: link.href, hash: link.hash }}
+                    className={`relative flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200 ${
+                      isActive
+                        ? "bg-[#47aa66] text-[#fdfbd7]"
+                        : "text-[#245433]/80 hover:bg-[#47aa66]/10 hover:text-[#245433]"
+                    }`}
+                  >
+                    {link.label}
+                    {link.label === "Carrito" && totalItems > 0 && (
+                      <span className={`inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-xs font-bold transition-colors duration-200 ${
+                        isActive 
+                          ? "bg-[#fdfbd7] text-[#47aa66]" 
+                          : "bg-[#245433] text-[#fdfbd7]"
+                      }`}>
+                        {totalItems}
+                      </span>
+                    )}
+                    {isActive && (
+                      <span className="absolute bottom-0.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-[#7b1f2a]" />
+                    )}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+
+          <div className="border-l border-[#47aa66]/20 pl-4 flex items-center gap-3">
+            {isAuthenticated && user ? (
+              <div className="flex items-center gap-2">
+                <span className="hidden sm:inline text-xs font-bold text-[#245433]">
+                  Hola, <span className="text-[#1f8848]">{user.user}</span>
+                </span>
+                <button
+                  onClick={() => logout()}
+                  className="rounded-lg bg-[#7b1f2a]/10 hover:bg-[#7b1f2a]/20 text-[#7b1f2a] px-3 py-1.5 text-xs font-bold transition-all duration-200"
                 >
-                  {link.label}
-                  {link.label === "Carrito" && totalItems > 0 && (
-                    <span className={`inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-xs font-bold transition-colors duration-200 ${
-                      isActive 
-                        ? "bg-[#fdfbd7] text-[#47aa66]" 
-                        : "bg-[#245433] text-[#fdfbd7]"
-                    }`}>
-                      {totalItems}
-                    </span>
-                  )}
-                  {isActive && (
-                    <span className="absolute bottom-0.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-[#7b1f2a]" />
-                  )}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+                  Salir
+                </button>
+              </div>
+            ) : (
+              <Link
+                to="/register"
+                className="rounded-lg bg-[#1F8848] hover:bg-[#40A360] text-white px-3.5 py-1.5 text-xs font-bold transition-all duration-200 shadow-md shadow-[#1F8848]/20"
+              >
+                Registrarse
+              </Link>
+            )}
+          </div>
+        </div>
       </div>
     </nav>
   );
 };
+
 

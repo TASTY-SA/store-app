@@ -1,11 +1,15 @@
 import { useState } from "react";
 import { useProductos } from "../hooks/hooksproductos";
 import { useCartStore } from "../../../store/cartStore";
+import { useAuthStore } from "../../../store/authStore";
+import { RequireAuthModal } from "../../auth/components/RequireAuthModal";
 
 export const TarjetasPromos = () => {
   const { productos, isLoading } = useProductos();
   const addToCart = useCartStore((s) => s.addToCart);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const [added, setAdded] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   // 1. Si está cargando o no hay datos todavía, no dejes que intente renderizar el componente principal
   if (isLoading || !productos?.data || productos.data.length === 0) {
@@ -16,13 +20,17 @@ export const TarjetasPromos = () => {
   const productoPromo = productos.data[0];
 
   const handleBuy = () => {
+    if (!isAuthenticated) {
+      setShowAuthModal(true);
+      return;
+    }
     addToCart(productoPromo, 1);
     setAdded(true);
     setTimeout(() => setAdded(false), 1500);
   };
 
   return (
-    <div className="flex bg-[#F8E1A5] text-[#000000] h-128 w-300 my-10 mx-auto rounded-2xl overflow-hidden shadow-lg">
+    <div className="relative flex bg-[#F8E1A5] text-[#000000] h-128 w-300 my-10 mx-auto rounded-2xl overflow-hidden shadow-lg">
       <img 
         className="w-2/5 h-full object-cover"
         src={productoPromo.imagen_url || "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500"}
@@ -62,6 +70,10 @@ export const TarjetasPromos = () => {
         </div>
 
       </div>
+
+      {showAuthModal && (
+        <RequireAuthModal onClose={() => setShowAuthModal(false)} />
+      )}
     </div>
   );
 };
