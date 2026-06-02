@@ -1,6 +1,14 @@
+// Página de Login (con NavBar y diseño completo)
 export { Login } from './page/LoginPage';
-export { RegisterPage } from './components/RegisterPage';
-export { ProtectedRoute } from './components/PrivateRoute';
-export { useAuthStore } from '../../store/authStore';
-export * from './types';
 
+// Página de Registro (con NavBar y diseño completo)
+export { RegisterPage } from './components/RegisterPage';
+
+// Rutas protegidas
+export { ProtectedRoute } from './components/PrivateRoute';
+
+// Store de auth (Zustand)
+export { useAuthStore } from '../../store/authStore';
+
+// Tipos
+export * from './types';

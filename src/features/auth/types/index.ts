@@ -1,35 +1,29 @@
-export type UserRole = "ADMIN" | "CLIENTE";
+// ─── Tipos alineados con el backend (FastAPI + SQLModel) ──────────────────────
 
-export interface IUser {
-  id: number;
-  user: string;
-  password?: string;
-  username?: string;
-  email?: string;
-  full_name?: string;
-  is_active?: boolean;
-  role_codes?: string[];
-  role?: string;
+/** Rol público tal como lo devuelve el backend en UserPublic.roles[] */
+export interface RolPublic {
+  codigo: string;
+  nombre: string;
+  descripcion?: string | null;
 }
 
+/** Vista pública del usuario que devuelve el backend en /auth/me */
+export interface UserPublic {
+  id: number;
+  username: string;
+  full_name: string;
+  email: string;
+  disabled: boolean;
+  roles: RolPublic[];
+}
+
+/** Payload para registrar un nuevo usuario */
 export interface UserRegisterPayload {
   username: string;
   full_name: string;
   email: string;
-  password?: string;
+  password: string; // mínimo 8 chars (validado en backend)
 }
 
-export interface AuthState {
-  user: IUser | null;
-  isAuthenticated: boolean;
-  token: string;
-  isLoading?: boolean;
-  error?: string | null;
-  login: (credentials: { user: string; password: string }) => Promise<IUser | null>;
-  logout: VoidFunction;
-  checkAuth: () => Promise<boolean>;
-  setError?: (err: string | null) => void;
-  register?: (payload: UserRegisterPayload) => Promise<IUser>;
-  clearSession?: () => void;
-  hasRole?: (...roles: string[]) => boolean;
-}
+/** Roles posibles (códigos que usa el backend) */
+export type UserRole = "ADMIN" | "CLIENTE" | "PEDIDOS";

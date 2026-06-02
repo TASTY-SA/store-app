@@ -1,25 +1,31 @@
-import { useState, type SyntheticEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuthStore } from "../../../store/authStore";
 import { NavBar } from "../../../shared/NavBar/NavBar";
 
 export const Login = () => {
-  const { login } = useAuthStore();
+  const login = useAuthStore((s) => s.login);
   const navigate = useNavigate();
 
-  const [user, setUser] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [localError, setLocalError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  async function onSubmit(event: SyntheticEvent<HTMLFormElement>) {
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError(null);
-    const ok = await login({ user, password });
-    if (!ok) {
-      setError('Credenciales inválidas');
-      return;
+    setLocalError(null);
+    setIsSubmitting(true);
+    try {
+
+      await login(username, password);
+      navigate("/");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Credenciales inválidas";
+      setLocalError(msg);
+    } finally {
+      setIsSubmitting(false);
     }
-    navigate("/");
   }
 
   return (
@@ -36,9 +42,9 @@ export const Login = () => {
           </div>
 
           <form onSubmit={onSubmit} className="space-y-4">
-            {error && (
+            {localError && (
               <div className="rounded-xl bg-[#7b1f2a]/10 border border-[#7b1f2a]/20 p-3 text-sm text-[#7b1f2a] font-medium">
-                {error}
+                {localError}
               </div>
             )}
 
@@ -47,12 +53,14 @@ export const Login = () => {
                 Usuario
               </label>
               <input
-                value={user}
-                onChange={(e) => setUser(e.target.value)}
+                id="login-username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 type="text"
                 required
+                disabled={isSubmitting}
                 placeholder="Ingresa tu usuario"
-                className="w-full rounded-2xl border border-[#c5c89a] bg-white p-3 text-sm text-[#245433] placeholder-[#245433]/45 focus:border-[#47aa66] focus:outline-none focus:ring-1 focus:ring-[#47aa66]"
+                className="w-full rounded-2xl border border-[#c5c89a] bg-white p-3 text-sm text-[#245433] placeholder-[#245433]/45 focus:border-[#47aa66] focus:outline-none focus:ring-1 focus:ring-[#47aa66] disabled:opacity-60"
               />
             </div>
 
@@ -61,20 +69,24 @@ export const Login = () => {
                 Contraseña
               </label>
               <input
+                id="login-password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={isSubmitting}
                 placeholder="Ingresa tu contraseña"
-                className="w-full rounded-2xl border border-[#c5c89a] bg-white p-3 text-sm text-[#245433] placeholder-[#245433]/45 focus:border-[#47aa66] focus:outline-none focus:ring-1 focus:ring-[#47aa66]"
+                className="w-full rounded-2xl border border-[#c5c89a] bg-white p-3 text-sm text-[#245433] placeholder-[#245433]/45 focus:border-[#47aa66] focus:outline-none focus:ring-1 focus:ring-[#47aa66] disabled:opacity-60"
               />
             </div>
 
             <button
+              id="login-submit"
               type="submit"
-              className="mt-6 w-full rounded-2xl bg-[#1F8848] py-3.5 text-sm font-bold text-white shadow-md shadow-[#1F8848]/20 transition-all hover:bg-[#40A360] active:scale-95"
+              disabled={isSubmitting}
+              className="mt-6 w-full rounded-2xl bg-[#1F8848] py-3.5 text-sm font-bold text-white shadow-md shadow-[#1F8848]/20 transition-all hover:bg-[#40A360] active:scale-95 disabled:opacity-50"
             >
-              Ingresar
+              {isSubmitting ? "Ingresando…" : "Ingresar"}
             </button>
           </form>
 

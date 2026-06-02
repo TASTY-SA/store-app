@@ -1,153 +1,104 @@
-import { useSyncExternalStore } from 'react'
-import type { AuthState, IUser } from '../features/auth/types'
-import { apiClient } from '../features/auth/services/axiosInstance'
+import { create } from "zustand";
+import * as authApi from "../features/auth/services/authApi";
+import type { UserPublic, UserRegisterPayload, UserRole } from "../features/auth/types";
 
-type AuthCredentials = {
-  user: string
-  password: string
+/**
+ * Store de autenticación basado en cookies httpOnly.
+ *
+ * Diseño (siguiendo el patrón Zustand + cookies httpOnly):
+ *  - El JWT NO vive en el frontend. Solo existe como cookie httpOnly
+ *    administrada por el navegador y el backend.
+ *  - Zustand mantiene únicamente datos no sensibles del usuario en memoria.
+ *  - No usamos el middleware `persist` porque no hay nada que persistir
+ *    desde JS: al recargar, se rehidrata el estado llamando a `/auth/me`
+ *    (la cookie viaja automáticamente).
+ */
+interface AuthState {
+  user: UserPublic | null;
+  isAuthenticated: boolean;
+  // `isLoading` arranca en true para que la UI sepa que estamos verificando
+  // la sesión contra el backend antes de mostrar login o contenido protegido.
+  isLoading: boolean;
+  error: string | null;
+
+  /** Verifica si el usuario tiene al menos uno de los roles indicados */
+  hasRole: (...roles: UserRole[]) => boolean;
+  login: (username: string, password: string) => Promise<void>;
+  register: (payload: UserRegisterPayload) => Promise<void>;
+  logout: () => Promise<void>;
+  /** Rehidrata la sesión al iniciar la app leyendo la cookie desde el backend */
+  checkAuth: () => Promise<void>;
+  clearSession: () => void;
+  setError: (msg: string | null) => void;
 }
 
-// Estructura de respuesta pública de usuario del backend
-interface UserPublic {
-  id: number
-  username: string
-  full_name: string
-  email: string
-  disabled: boolean
-  roles: { codigo: string; nombre: string; descripcion?: string }[]
-}
-
-let currentState: AuthState
-
-const listeners = new Set<() => void>()
-
-const emitChange = () => {
-  for (const listener of listeners) {
-    listener()
-  }
-}
-
-const setState = (partialState: Partial<AuthState>) => {
-  currentState = { ...currentState, ...partialState }
-  emitChange()
-}
-
-const login = async (credentials: AuthCredentials): Promise<IUser | null> => {
-  const normalizedUser = credentials.user.trim()
-  const normalizedPassword = credentials.password.trim()
-
-  if (!normalizedUser || !normalizedPassword) {
-    return null
-  }
-
-  try {
-    // El backend recibe OAuth2PasswordRequestForm (form-urlencoded)
-    const body = new URLSearchParams({
-      username: normalizedUser,
-      password: normalizedPassword,
-    })
-
-    await apiClient.post("/api/v1/auth/token", body, {
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-    })
-
-    // Si el login fue exitoso, rehidratamos la info llamando a /me
-    const meRes = await apiClient.get<UserPublic>("/api/v1/auth/me")
-    const user: IUser = {
-      id: meRes.data.id,
-      user: meRes.data.username,
-      username: meRes.data.username,
-      full_name: meRes.data.full_name,
-      email: meRes.data.email,
-      is_active: !meRes.data.disabled,
-      role_codes: meRes.data.roles.map((r) => r.codigo),
-    }
-
-    setState({ user, isAuthenticated: true })
-    return user
-  } catch (err: any) {
-    console.error("Error al iniciar sesión en el backend:", err)
-    const msg = err.response?.data?.detail || "Usuario o contraseña incorrectos"
-    throw new Error(typeof msg === "string" ? msg : JSON.stringify(msg))
-  }
-}
-
-const logout = async () => {
-  try {
-    await apiClient.post("/api/v1/auth/logout")
-  } catch (err) {
-    console.error("Error al cerrar sesión:", err)
-  } finally {
-    setState({ user: null, isAuthenticated: false })
-  }
-}
-
-const checkAuth = async (): Promise<boolean> => {
-  try {
-    const res = await apiClient.get<UserPublic>("/api/v1/auth/me")
-    const user: IUser = {
-      id: res.data.id,
-      user: res.data.username,
-      username: res.data.username,
-      full_name: res.data.full_name,
-      email: res.data.email,
-      is_active: !res.data.disabled,
-      role_codes: res.data.roles.map((r) => r.codigo),
-    }
-    setState({ user, isAuthenticated: true })
-    return true
-  } catch (err) {
-    setState({ user: null, isAuthenticated: false })
-    return false
-  }
-}
-
-// Inicializar estado por defecto
-currentState = {
+export const useAuthStore = create<AuthState>()((set, get) => ({
   user: null,
   isAuthenticated: false,
-  token: "",
-  login,
-  logout,
-  checkAuth,
-}
+  isLoading: true,
+  error: null,
 
-// Intentar rehidratar la sesión de fondo al iniciar la app
-const initAuth = async () => {
-  try {
-    const res = await apiClient.get<UserPublic>("/api/v1/auth/me")
-    const user: IUser = {
-      id: res.data.id,
-      user: res.data.username,
-      username: res.data.username,
-      full_name: res.data.full_name,
-      email: res.data.email,
-      is_active: !res.data.disabled,
-      role_codes: res.data.roles.map((r) => r.codigo),
+  setError: (msg) => set({ error: msg }),
+
+  hasRole: (...roles) => {
+    const { user } = get();
+    if (!user) return false;
+    // El backend devuelve roles como array de RolPublic → comparamos por codigo
+    return user.roles.some((r) => roles.includes(r.codigo as UserRole));
+  },
+
+  clearSession: () =>
+    set({ user: null, isAuthenticated: false, isLoading: false, error: null }),
+
+  // Rehidrata el store al iniciar la app. Si la cookie httpOnly sigue
+  // siendo válida, el backend devuelve el usuario; si no, queda anónimo.
+  checkAuth: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const user = await authApi.requestMe();
+      set({ user, isAuthenticated: true, isLoading: false });
+    } catch {
+      set({ user: null, isAuthenticated: false, isLoading: false });
     }
-    setState({ user, isAuthenticated: true })
-  } catch (err) {
-    // Si no está logueado o expira, iniciamos en estado no autenticado limpio
-    setState({ user: null, isAuthenticated: false })
-  }
-}
-initAuth()
+  },
 
-const subscribe = (listener: () => void) => {
-  listeners.add(listener)
-  return () => listeners.delete(listener)
-}
+  login: async (username, password) => {
+    set({ isLoading: true, error: null });
+    try {
+      await authApi.requestLogin(username, password);
+      // El backend setea la cookie httpOnly en la respuesta del login.
+      // Acto seguido pedimos /me para traer los datos del usuario.
+      const user = await authApi.requestMe();
+      set({ user, isAuthenticated: true, isLoading: false });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Error de inicio de sesión";
+      set({ user: null, isAuthenticated: false, isLoading: false, error: msg });
+      throw e;
+    }
+  },
 
-export function useAuthStore(): AuthState
-export function useAuthStore<T>(selector: (state: AuthState) => T): T
-export function useAuthStore<T>(selector?: (state: AuthState) => T) {
-  const selectState = selector ?? ((state: AuthState) => state as unknown as T)
+  register: async (payload) => {
+    set({ isLoading: true, error: null });
+    try {
+      await authApi.requestRegister(payload);
+      set({ isLoading: false });
+      // Auto-login tras registrarse
+      await get().login(payload.username, payload.password);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Error al registrarse";
+      set({ isLoading: false, error: msg });
+      throw e;
+    }
+  },
 
-  return useSyncExternalStore(
-    subscribe,
-    () => selectState(currentState),
-    () => selectState(currentState),
-  )
-}
+  logout: async () => {
+    try {
+      await authApi.requestLogout();
+    } catch {
+      // Aun si falla la red, limpiamos el estado local: el usuario
+      // dejará de ver contenido protegido y un eventual 401 posterior
+      // terminará de sincronizar la cookie.
+    }
+    set({ user: null, isAuthenticated: false, error: null, isLoading: false });
+  },
+}));
