@@ -17,10 +17,10 @@ export const NavBar = () => {
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-[#47aa66]/20 bg-[#fdfbd7]/90 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
         <Link to="/" className="flex items-center gap-3 transition-transform duration-200 hover:scale-[1.02]">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#47aa66]/25 bg-[#47aa66] text-sm font-black text-[#fdfbd7] shadow-lg shadow-[#47aa66]/20">
-          FS
+          <div className="flex h-10 w-20 items-center justify-center rounded-xl border border-[#47aa66]/25 bg-[#47aa66] text-sm font-black text-[#fdfbd7] shadow-lg shadow-[#47aa66]/20">
+          BigPickle
           </div>
           <span className="text-sm font-semibold uppercase tracking-[0.28em] text-[#245433]">Catalogo</span>
         </Link>
