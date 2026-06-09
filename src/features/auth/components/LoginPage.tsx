@@ -20,11 +20,7 @@ export function LoginPage() {
     setLocalError(null);
 
     try {
-      const result = login({ user: username, password });
-      if (!result) {
-        setLocalError("Credenciales inválidas");
-        return;
-      }
+      await login(username, password);
       navigate("/");
     } catch (err: any) {
       setLocalError(err?.message || "Error al iniciar sesión");

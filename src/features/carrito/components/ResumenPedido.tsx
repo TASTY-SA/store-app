@@ -24,8 +24,6 @@ export function ResumenPedido({
   const [promoStatus, setPromoStatus] = useState<"idle" | "success" | "error">("idle");
 
   // Tarifas de envío e impuestos simulados (fijos si hay elementos, 0 si está vacío)
-  const deliveryFee = subtotal > 0 ? 500 : 0;
-  const taxesAndFees = subtotal > 0 ? Math.round(subtotal * 0.08) : 0; // 8% de impuestos
 
   const handleApplyPromo = (e: React.FormEvent) => {
     e.preventDefault();

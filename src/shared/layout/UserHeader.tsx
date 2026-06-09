@@ -11,7 +11,7 @@ export function UserHeader() {
       <div>
         <p className="text-sm text-zinc-500">Sesión iniciada</p>
         <p className="text-lg font-semibold text-zinc-900">
-          {user.full_name || user.user}
+          {user.full_name || user.username}
         </p>
         {user.email && (
           <p className="text-sm text-zinc-500">{user.email}</p>
