@@ -69,8 +69,8 @@ export function ResumenPedido({
           </div>
         )}
 
-        
-      
+
+
       </div>
 
       <div className="mt-5">
@@ -93,9 +93,8 @@ export function ResumenPedido({
         </form>
 
         {promoMessage && (
-          <p className={`mt-2 text-xs font-semibold ${
-            promoStatus === "success" ? "text-emerald-600" : "text-[#7b1f2a]"
-          }`}>
+          <p className={`mt-2 text-xs font-semibold ${promoStatus === "success" ? "text-emerald-600" : "text-[#7b1f2a]"
+            }`}>
             {promoMessage}
           </p>
         )}
