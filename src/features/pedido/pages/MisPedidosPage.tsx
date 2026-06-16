@@ -17,7 +17,7 @@ function groupByStatus(pedidos: IPedido[]) {
 
 export function MisPedidosPage() {
   const { isAuthenticated } = useAuthStore()
-  const { pedidos, loading, error, refetch, loadDetalles } = useMisPedidos()
+  const { pedidos, loading, error, refetch, loadDetalles, loadHistorial, cancelarPedido } = useMisPedidos()
   const { activos, historial } = groupByStatus(pedidos)
 
   // Si no está autenticado, redirigir
@@ -102,7 +102,13 @@ export function MisPedidosPage() {
             </div>
             <div className="flex flex-col gap-5">
               {activos.map((p) => (
-                <TarjetaPedido key={p.id} pedido={p} onLoadDetalles={loadDetalles} />
+                <TarjetaPedido
+                  key={p.id}
+                  pedido={p}
+                  onLoadDetalles={loadDetalles}
+                  onLoadHistorial={loadHistorial}
+                  onCancel={cancelarPedido}
+                />
               ))}
             </div>
           </section>
@@ -121,7 +127,13 @@ export function MisPedidosPage() {
             </div>
             <div className="flex flex-col gap-5">
               {historial.map((p) => (
-                <TarjetaPedido key={p.id} pedido={p} onLoadDetalles={loadDetalles} />
+                <TarjetaPedido
+                  key={p.id}
+                  pedido={p}
+                  onLoadDetalles={loadDetalles}
+                  onLoadHistorial={loadHistorial}
+                  onCancel={cancelarPedido}
+                />
               ))}
             </div>
           </section>

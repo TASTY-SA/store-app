@@ -1,5 +1,5 @@
 import { apiClient } from '../../auth/services/axiosInstance'
-import type { IDetallePedido, IPedidoCreate, IPedido, IPedidoList } from '../IPedido'
+import type { IDetallePedido, IHistorialEstado, IPedidoCreate, IPedido, IPedidoList } from '../IPedido'
 
 const BASE = '/pedidos'
 
@@ -51,6 +51,27 @@ export const pedidoService = {
    */
   async getDetalles(pedidoId: number): Promise<IDetallePedido[]> {
     const res = await apiClient.get<IDetallePedido[]>(`${BASE}/${pedidoId}/detalles`)
+    return res.data
+  },
+
+  /**
+   * Obtener el historial de transiciones de estado de un pedido
+   */
+  async getHistorial(pedidoId: number): Promise<IHistorialEstado[]> {
+    const res = await apiClient.get<IHistorialEstado[]>(`${BASE}/${pedidoId}/historial`)
+    return res.data
+  },
+
+  /**
+   * Cancelar un pedido propio (solo PENDIENTE o CONFIRMADO)
+   * El backend no expone DELETE /pedidos/{id}, usa PATCH /pedidos/{id}/estado
+   * con estado_hacia: "CANCELADO" y motivo obligatorio.
+   */
+  async cancelar(pedidoId: number, motivo: string): Promise<IPedido> {
+    const res = await apiClient.patch<IPedido>(`${BASE}/${pedidoId}/estado`, {
+      estado_hacia: 'CANCELADO',
+      motivo,
+    })
     return res.data
   },
 }

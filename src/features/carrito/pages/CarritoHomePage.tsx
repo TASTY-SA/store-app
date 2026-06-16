@@ -49,14 +49,21 @@ export function CarritoHomePage() {
       setShowCheckoutModal(false)
 
       try {
+        // ── Juntar notas de todos los items ──────────
+        const notasPedido = items
+          .map((item) => item.notas?.trim())
+          .filter(Boolean)
+          .join(' | ') || null
+
         // ── Crear pedido ───────────────────────────
         const nuevoPedido = await pedidoService.create({
           forma_pago_codigo: metodo,
           direccion_id: direccionId ?? null,
-          notas: null,
+          notas: notasPedido,
           items: items.map((item) => ({
             producto_id: item.producto.id!,
             cantidad: item.cantidad,
+            notas: item.notas || null,
           })),
         })
 

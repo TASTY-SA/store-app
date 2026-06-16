@@ -34,7 +34,17 @@ export interface IDetallePedido {
   nombre_snapshot: string
   precio_snapshot: number
   subtotal_snap: number
-  personalizacion: number[] | null
+  notas: string | null
+}
+
+export interface IHistorialEstado {
+  id: number
+  pedido_id: number
+  estado_desde: string | null
+  estado_hacia: EstadoCodigo
+  usuario_id: number | null
+  motivo: string | null
+  created_at: string
 }
 
 export interface IPedidoCreate {
@@ -44,6 +54,6 @@ export interface IPedidoCreate {
   items: {
     producto_id: number
     cantidad: number
-    personalizacion?: number[] | null
+    notas?: string | null
   }[]
 }

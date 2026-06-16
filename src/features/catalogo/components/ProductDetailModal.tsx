@@ -21,6 +21,7 @@ export function ProductDetailModal({ producto, onClose }: Props) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const [added, setAdded] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
+  const [notas, setNotas] = useState('')
 
   const handleAdd = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -28,7 +29,7 @@ export function ProductDetailModal({ producto, onClose }: Props) {
       setShowAuthModal(true)
       return
     }
-    addToCart(producto, 1)
+    addToCart(producto, 1, notas)
     setAdded(true)
     setTimeout(() => setAdded(false), 1500)
   }
@@ -145,6 +146,20 @@ export function ProductDetailModal({ producto, onClose }: Props) {
               </div>
             </div>
           )}
+
+          {/* Nota personalizada */}
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-[#245433]/70 mb-2">
+              Nota para el producto
+            </label>
+            <textarea
+              value={notas}
+              onChange={(e) => setNotas(e.target.value)}
+              placeholder="Ej. Sin cebolla, cocción extra, salsa aparte..."
+              className="w-full rounded-2xl border border-[#c5c89a] bg-white p-3 text-sm text-[#245433] placeholder-[#245433]/45 focus:border-[#47aa66] focus:outline-none focus:ring-1 focus:ring-[#47aa66] min-h-[80px] resize-none"
+              maxLength={200}
+            />
+          </div>
 
           {/* Add to cart */}
           <button

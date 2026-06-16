@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { pedidoService } from '../services/pedidoService'
-import type { IDetallePedido, IPedido, EstadoCodigo } from '../IPedido'
+import type { IDetallePedido, IHistorialEstado, IPedido, EstadoCodigo } from '../IPedido'
 import { useWebSocket, type WsMessage } from '../../../hooks/useWebSocket'
 import { useAuthStore } from '../../../store/authStore'
 
@@ -25,6 +25,7 @@ function isNonTerminal(estado: EstadoCodigo): boolean {
 
 interface PedidoConDetalles extends IPedido {
   detalles?: IDetallePedido[]
+  historial?: IHistorialEstado[]
 }
 
 // ──────────────────────────────────────────────
@@ -89,6 +90,31 @@ export function useMisPedidos() {
     }
   }, [])
 
+  // ── Historial ──────────────────────────────
+
+  const loadHistorial = useCallback(async (pedidoId: number) => {
+    try {
+      const historial = await pedidoService.getHistorial(pedidoId)
+      setPedidos((prev) =>
+        prev.map((p) => (p.id === pedidoId ? { ...p, historial } : p)),
+      )
+    } catch {
+      // Silencioso
+    }
+  }, [])
+
+  // ── Cancelar pedido ────────────────────────
+
+  const cancelarPedido = useCallback(async (pedidoId: number, motivo: string) => {
+    try {
+      await pedidoService.cancelar(pedidoId, motivo)
+      // Refrescar la lista completa después de cancelar
+      fetchPedidosRef.current?.()
+    } catch {
+      throw new Error('No se pudo cancelar el pedido.')
+    }
+  }, [])
+
   // ── WebSocket ──────────────────────────────
 
   const { subscribeToOrder, unsubscribeFromOrder } = useWebSocket({
@@ -135,7 +161,7 @@ export function useMisPedidos() {
     }, []), // ← estable: usa refs para acceder a valores actuales
   })
 
-  // ── Efecto: fetch inicial + polling de fallback ──
+  // ── Efecto: fetch inicial + polling de fallback + refetch en foco ──
   // Solo se activa cuando el usuario está autenticado.
 
   useEffect(() => {
@@ -149,7 +175,17 @@ export function useMisPedidos() {
     // Polling de fallback cada 5 minutos por si el WS se cae y la
     // reconexión automática no logra recuperarse.
     const interval = setInterval(fetchPedidos, 5 * 60_000)
-    return () => clearInterval(interval)
+
+    // Refetch al ganar foco de la ventana (navegación de pestañas, etc.)
+    const onFocus = () => fetchPedidosRef.current?.()
+    window.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') onFocus()
+    })
+
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener('visibilitychange', onFocus)
+    }
   }, [fetchPedidos, isAuthenticated])
 
   // ── Efecto: mantener suscripciones sincronizadas ──
@@ -184,5 +220,5 @@ export function useMisPedidos() {
 
   // ── Retorno ────────────────────────────────
 
-  return { pedidos, loading, error, refetch: fetchPedidos, loadDetalles }
+  return { pedidos, loading, error, refetch: fetchPedidos, loadDetalles, loadHistorial, cancelarPedido }
 }
