@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import apiClient from "../../auth/services/axiosInstance";
 import type { IProducto } from "../../productos/IProducto";
@@ -6,6 +6,11 @@ import type { ICategoria } from "../../categoria/ICategoria";
 import { useCartStore } from "../../../store/cartStore";
 import { useAuthStore } from "../../../store/authStore";
 import { RequireAuthModal } from "../../auth/components/RequireAuthModal";
+import { ProductDetailModal } from "./ProductDetailModal";
+
+// ─── Constantes ───────────────────────────────────────────────────────────────
+
+const PAGE_SIZE = 12;
 
 // ─── API calls ────────────────────────────────────────────────────────────────
 
@@ -16,11 +21,24 @@ const fetchCategorias = async (): Promise<ICategoria[]> => {
   return res.data.data;
 };
 
-const fetchProductos = async (offset = 0, limit = 50): Promise<IProducto[]> => {
+interface FetchProductosResult {
+  data: IProducto[];
+  total: number;
+}
+
+const fetchProductos = async (
+  offset = 0,
+  limit = PAGE_SIZE,
+  nombre = "",
+): Promise<FetchProductosResult> => {
+  const params = new URLSearchParams();
+  params.set("offset", String(offset));
+  params.set("limit", String(limit));
+  if (nombre) params.set("nombre", nombre);
   const res = await apiClient.get<{ data: IProducto[]; total: number }>(
-    `/productos/?offset=${offset}&limit=${limit}`
+    `/productos/?${params}`,
   );
-  return res.data.data;
+  return { data: res.data.data, total: res.data.total };
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -30,13 +48,20 @@ const fmt = (n: number) =>
 
 // ─── Product card ─────────────────────────────────────────────────────────────
 
-function ProductCard({ producto }: { producto: IProducto }) {
+function ProductCard({
+  producto,
+  onSelect,
+}: {
+  producto: IProducto;
+  onSelect: (p: IProducto) => void;
+}) {
   const addToCart = useCartStore((s) => s.addToCart);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const [added, setAdded] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
-  const handleAdd = () => {
+  const handleAdd = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (!isAuthenticated) {
       setShowAuthModal(true);
       return;
@@ -47,7 +72,10 @@ function ProductCard({ producto }: { producto: IProducto }) {
   };
 
   return (
-    <div className="group relative flex flex-col rounded-2xl bg-[#fffff0] border border-[#e8e5c0] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+    <div
+      onClick={() => onSelect(producto)}
+      className="group relative flex flex-col rounded-2xl bg-[#fffff0] border border-[#e8e5c0] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer"
+    >
       {/* image */}
       <div className="relative h-48 overflow-hidden">
         <img
@@ -69,6 +97,12 @@ function ProductCard({ producto }: { producto: IProducto }) {
         {producto.stock_cantidad !== undefined && producto.stock_cantidad <= 5 && (
           <span className="absolute top-2 right-2 rounded-full bg-red-500/90 px-2.5 py-0.5 text-[10px] font-bold text-white">
             ¡Últimas {producto.stock_cantidad}!
+          </span>
+        )}
+        {/* allergen badge */}
+        {producto.ingredientes?.some((i) => i.es_alergeno) && (
+          <span className="absolute bottom-2 left-2 rounded-full bg-amber-500/90 px-2.5 py-0.5 text-[10px] font-bold text-white backdrop-blur-sm">
+            ⚠️ Alérgenos
           </span>
         )}
       </div>
@@ -129,6 +163,23 @@ function ProductCard({ producto }: { producto: IProducto }) {
 export const CatalogoTarjetas = () => {
   const [selectedParentId, setSelectedParentId] = useState<number | null>(null);
   const [selectedChildId, setSelectedChildId] = useState<number | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [selectedProduct, setSelectedProduct] = useState<IProducto | null>(null);
+
+  // Debounce: espera 400ms antes de enviar el search al backend
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Resetear página al cambiar la búsqueda
+  useEffect(() => {
+    if (page !== 1) setPage(1);
+  }, [debouncedSearch]);
 
   // Fetch categories
   const { data: categorias = [], isLoading: catLoading } = useQuery({
@@ -137,12 +188,20 @@ export const CatalogoTarjetas = () => {
     staleTime: 1000 * 60 * 5,
   });
 
-  // Fetch all products (up to 50)
-  const { data: productos = [], isLoading: prodLoading } = useQuery({
-    queryKey: ["productos-catalogo"],
-    queryFn: () => fetchProductos(0, 50),
+  // Fetch productos con paginación y búsqueda server-side
+  const {
+    data: productosData,
+    isLoading: prodLoading,
+  } = useQuery({
+    queryKey: ["productos-catalogo", { search: debouncedSearch, page }],
+    queryFn: () =>
+      fetchProductos((page - 1) * PAGE_SIZE, PAGE_SIZE, debouncedSearch),
     staleTime: 1000 * 60 * 2,
   });
+
+  const productos = productosData?.data ?? [];
+  const total = productosData?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   // Derive parent / child categories from flat list
   const parentCats = categorias.filter((c) => !c.parent_id);
@@ -188,11 +247,28 @@ export const CatalogoTarjetas = () => {
           <h2 className="text-3xl font-black text-[#1a3a26] tracking-tight">Nuestro Menú</h2>
           <p className="mt-1 text-sm text-[#245433]/60">
             {filteredProducts.length} productos disponibles
+            {debouncedSearch && ` · buscando "${debouncedSearch}"`}
           </p>
         </div>
 
-        {/* Child category quick-filter tabs (top-right) */}
-        <div className="flex flex-wrap gap-2">
+        {/* Search + Child category quick-filter tabs (top-right) */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Search input */}
+          <div className="relative w-full sm:w-auto">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Buscar producto…"
+              className="w-full rounded-full border border-[#c5c89a] bg-white px-4 py-1.5 pl-9 text-sm text-[#245433] placeholder-[#245433]/40 outline-none transition-all focus:border-[#1F8848] focus:ring-2 focus:ring-[#1F8848]/20 sm:w-48"
+            />
+            <svg
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#245433]/40"
+              fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
+            </svg>
+          </div>
           <button
             onClick={() => setSelectedChildId(null)}
             className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-all duration-200 ${
@@ -292,12 +368,42 @@ export const CatalogoTarjetas = () => {
           ) : (
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
               {filteredProducts.map((producto) => (
-                <ProductCard key={producto.id} producto={producto} />
+                <ProductCard key={producto.id} producto={producto} onSelect={setSelectedProduct} />
               ))}
+            </div>
+          )}
+
+          {/* ── Paginación ── */}
+          {!isLoading && productos.length > 0 && totalPages > 1 && (
+            <div className="mt-8 flex items-center justify-center gap-4">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page <= 1}
+                className="rounded-xl border border-[#c5c89a] bg-white px-4 py-2 text-sm font-semibold text-[#245433] transition-all hover:border-[#1F8848] hover:text-[#1F8848] disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                ← Anterior
+              </button>
+              <span className="text-sm font-medium text-[#245433]/70">
+                Página {page} de {totalPages}
+              </span>
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page >= totalPages}
+                className="rounded-xl border border-[#c5c89a] bg-white px-4 py-2 text-sm font-semibold text-[#245433] transition-all hover:border-[#1F8848] hover:text-[#1F8848] disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Siguiente →
+              </button>
             </div>
           )}
         </div>
       </div>
+
+      {selectedProduct && (
+        <ProductDetailModal
+          producto={selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+        />
+      )}
     </section>
   );
 };

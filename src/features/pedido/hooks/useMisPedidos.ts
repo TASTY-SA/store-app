@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { pedidoService } from '../services/pedidoService'
 import type { IDetallePedido, IPedido, EstadoCodigo } from '../IPedido'
 import { useWebSocket, type WsMessage } from '../../../hooks/useWebSocket'
@@ -32,6 +33,7 @@ interface PedidoConDetalles extends IPedido {
 
 export function useMisPedidos() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+  const queryClient = useQueryClient()
 
   const [pedidos, setPedidos] = useState<PedidoConDetalles[]>([])
   const [loading, setLoading] = useState(true)
@@ -93,9 +95,10 @@ export function useMisPedidos() {
     enabled: isAuthenticated,
     onMessage: useCallback((msg: WsMessage) => {
       switch (msg.event) {
-        // ── Reconexión: recargar datos y re-suscribirse
+        // ── Reconexión: recargar datos, invalidar cache y re-suscribirse
         case 'WS_CONNECTED':
           fetchPedidosRef.current?.()
+          queryClient.invalidateQueries({ queryKey: ['pedidos'] })
           // subscribedRef se limpia para que el efecto de suscripción
           // (más abajo) vuelva a enviar subscribe-order a los pedidos activos.
           subscribedRef.current.clear()
@@ -122,6 +125,10 @@ export function useMisPedidos() {
             next[idx] = updated
             return next
           })
+
+          // Invalidar cache de TanStack Query para que los componentes
+          // que usan useQuery(['pedidos']) vean los datos frescos.
+          queryClient.invalidateQueries({ queryKey: ['pedidos'] })
           break
         }
       }

@@ -17,6 +17,7 @@ export function RegisterPage() {
     full_name: "",
     password: "",
     email: "",
+    celular: "",
   });
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -50,6 +51,7 @@ export function RegisterPage() {
         username: formData.username.trim(),
         full_name: formData.full_name.trim(),
         email: formData.email.trim(),
+        celular: formData.celular.trim(),
         password: formData.password,
       });
 
@@ -145,6 +147,23 @@ export function RegisterPage() {
                   required
                   disabled={isLoading}
                   placeholder="tu@email.com"
+                  className="w-full rounded-2xl border border-[#c5c89a] bg-white p-3 text-sm text-[#245433] placeholder-[#245433]/45 focus:border-[#47aa66] focus:outline-none focus:ring-1 focus:ring-[#47aa66] disabled:opacity-60"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#245433]/70 mb-2">
+                  Celular
+                </label>
+                <input
+                  id="register-celular"
+                  type="tel"
+                  name="celular"
+                  value={formData.celular}
+                  onChange={handleChange}
+                  required
+                  disabled={isLoading}
+                  placeholder="Tu número de celular"
                   className="w-full rounded-2xl border border-[#c5c89a] bg-white p-3 text-sm text-[#245433] placeholder-[#245433]/45 focus:border-[#47aa66] focus:outline-none focus:ring-1 focus:ring-[#47aa66] disabled:opacity-60"
                 />
               </div>

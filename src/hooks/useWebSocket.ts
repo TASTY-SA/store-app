@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react'
 import { getApiBase } from '../features/auth/services/config'
+import { useWsStore } from '../store/wsStore'
 
 // ──────────────────────────────────────────────
 // Tipos públicos
@@ -106,6 +107,9 @@ export function useWebSocket({
           return
         }
         retryCount = 0
+        useWsStore.getState().setStatus('connected')
+        useWsStore.getState().resetAttempts()
+        useWsStore.getState().setError(null)
         onMessageRef.current?.({ event: 'WS_CONNECTED', data: null })
       }
 
@@ -130,7 +134,23 @@ export function useWebSocket({
         const wasNormal = e.code === 1000
         const wasAuthRejected = e.code === 1008
 
-        if (cancelled || wasNormal || wasAuthRejected) return
+        if (cancelled) return
+
+        if (wasAuthRejected) {
+          useWsStore.getState().setStatus('disconnected')
+          useWsStore.getState().setError('Autenticación rechazada')
+          return
+        }
+
+        if (wasNormal) {
+          useWsStore.getState().setStatus('disconnected')
+          useWsStore.getState().setError(null)
+          return
+        }
+
+        useWsStore.getState().setStatus('reconnecting')
+        useWsStore.getState().setError(e.reason || 'Conexión perdida')
+        useWsStore.getState().incrementAttempts()
 
         retryCount++
         const delay = Math.min(1000 * 2 ** retryCount, 30_000)

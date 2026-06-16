@@ -13,6 +13,7 @@ export interface UserPublic {
   username: string;
   full_name: string;
   email: string;
+  celular?: string | null;
   disabled: boolean;
   roles: RolPublic[];
 }
@@ -22,6 +23,7 @@ export interface UserRegisterPayload {
   username: string;
   full_name: string;
   email: string;
+  celular: string;
   password: string; // mínimo 8 chars (validado en backend)
 }
 
