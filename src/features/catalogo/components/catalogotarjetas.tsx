@@ -80,7 +80,7 @@ function ProductCard({ producto }: { producto: IProducto }) {
             {producto.nombre}
           </h3>
           <span className="shrink-0 text-base font-black text-[#1F8848]">
-            {fmt(producto.precio_base)}
+            {fmt(producto.precio_base)} / {producto.unidad_medida.simbolo}
           </span>
         </div>
 

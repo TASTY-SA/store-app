@@ -54,7 +54,7 @@ export const TarjetasPromos = () => {
         <div className="flex items-center justify-between w-full border-t border-[#fdfbd7]/10 pt-6">
           <div className="flex flex-col">
             <span className="text-xl text-[#241A00]/60 uppercase">Precio</span>
-            <span className="text-5xl font-black text-[#1F8848] mx-5">${productoPromo.precio_base}</span>
+            <span className="text-5xl font-black text-[#1F8848] mx-5">${productoPromo.precio_base} </span>
           </div>
           
           <button 

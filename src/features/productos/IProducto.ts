@@ -6,6 +6,7 @@ export interface IProducto {
   descripcion: string;
   precio_base: number;
   stock_cantidad: number;
+  unidad_medida: IUnidadMedida;
   imagen_url: string;
   is_active?: boolean;
   categorias?: ICategoria[];
@@ -19,5 +20,14 @@ export interface IIngrediente {
   es_alergeno: boolean;
   is_active?: boolean;
 }
+
+export interface IUnidadMedida {
+  id?: number;
+  nombre: string;
+  simbolo: string;
+  tipo: string;
+  is_active: boolean;
+}
+
 
 
