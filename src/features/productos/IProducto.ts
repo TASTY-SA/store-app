@@ -1,5 +1,4 @@
 import type { ICategoria } from "../categoria/ICategoria";
-import type { IIngrediente } from "../ingredientes/IIngredientes";
 
 export interface IProducto {
   id?: number;
@@ -10,6 +9,5 @@ export interface IProducto {
   imagen_url: string;
   is_active?: boolean;
   categorias?: ICategoria[];
-  ingredientes?: IIngrediente[];
 }
 
