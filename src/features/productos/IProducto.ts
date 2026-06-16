@@ -9,5 +9,15 @@ export interface IProducto {
   imagen_url: string;
   is_active?: boolean;
   categorias?: ICategoria[];
+  ingredientes?: IIngrediente[];
 }
+
+export interface IIngrediente {
+  id?: number;
+  nombre: string;
+  descripcion: string;
+  es_alergeno: boolean;
+  is_active?: boolean;
+}
+
 

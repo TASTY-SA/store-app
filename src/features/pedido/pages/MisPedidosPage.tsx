@@ -27,7 +27,6 @@ export function MisPedidosPage() {
         <NavBar />
         <main className="flex-1 w-full max-w-[860px] mx-auto px-5 pt-10 pb-20">
           <div className="flex flex-col items-center justify-center text-center py-20 px-6 bg-[#fdfbd7]/60 border-1.5 border-dashed border-[#c5c89a] rounded-[24px] gap-3">
-            <div className="text-5xl mb-2">🔒</div>
             <h2 className="m-0 text-xl font-extrabold text-[#245433]">Inicia sesión para ver tus pedidos</h2>
             <p className="m-0 text-sm text-[#245433]/60 max-w-[320px] leading-relaxed">Necesitás estar autenticado para acceder al historial de pedidos.</p>
             <div className="flex gap-3 justify-center flex-wrap mt-2">
