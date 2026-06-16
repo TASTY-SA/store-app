@@ -12,6 +12,24 @@ export const pedidoService = {
     return res.data
   },
 
+  async getInitPoint(pedidoId: number): Promise<{ init_point: string }> {
+    try {
+      const response = await apiClient.post<{ init_point: string }>(`/pagos/create-preference`, {
+        pedido_id: pedidoId
+      });
+      return response.data;
+    } catch (error: any) {
+      if (error.response) {
+        console.error('Error del servidor:', error.response.data);
+      } else if (error.request) {
+        console.error('No se recibió respuesta del servidor:', error.request);
+      } else {
+        console.error('Error al configurar la petición:', error.message);
+      }
+      throw error;
+    }
+  },
+
   /**
    * Obtener los pedidos del usuario autenticado
    */

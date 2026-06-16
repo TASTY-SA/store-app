@@ -49,21 +49,8 @@ export function CarritoHomePage() {
       setShowCheckoutModal(false)
 
       try {
-        // ── Simulación de Mercado Pago ────────────
-        // Cuando el backend tenga el endpoint real de MP, acá se llamará a:
-        //   const { init_point } = await pedidoService.createMpPreference({ ... })
-        //   window.location.href = init_point
-        //   return
-        //
-        if (metodo === 'MERCADOPAGO') {
-          setMpSimulando(true)
-          // Simular conexión con Mercado Pago (2 segundos)
-          await new Promise((resolve) => setTimeout(resolve, 2000))
-          setMpSimulando(false)
-        }
-
         // ── Crear pedido ───────────────────────────
-        await pedidoService.create({
+        const nuevoPedido = await pedidoService.create({
           forma_pago_codigo: metodo,
           direccion_id: direccionId ?? null,
           notas: null,
@@ -72,6 +59,20 @@ export function CarritoHomePage() {
             cantidad: item.cantidad,
           })),
         })
+
+        if (metodo === 'MERCADOPAGO') {
+          setMpSimulando(true)
+          try {
+            // Generar la preferencia de Mercado Pago usando el ID del pedido creado
+            const { init_point } = await pedidoService.getInitPoint(nuevoPedido.id)
+            if (init_point) {
+              window.location.href = init_point
+              return
+            }
+          } finally {
+            setMpSimulando(false)
+          }
+        }
 
         clearCart()
         navigate('/pedidos')
