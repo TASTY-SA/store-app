@@ -16,7 +16,7 @@ const PAGE_SIZE = 12;
 
 const fetchCategorias = async (): Promise<ICategoria[]> => {
   const res = await apiClient.get<{ data: ICategoria[]; total: number }>(
-    "/categorias/?offset=0&limit=100"
+    "/api/v1/categorias/?offset=0&limit=100"
   );
   return res.data.data;
 };
@@ -36,7 +36,7 @@ const fetchProductos = async (
   params.set("limit", String(limit));
   if (nombre) params.set("nombre", nombre);
   const res = await apiClient.get<{ data: IProducto[]; total: number }>(
-    `/productos/?${params}`,
+    `/api/v1/productos/?${params}`,
   );
   return { data: res.data.data, total: res.data.total };
 };

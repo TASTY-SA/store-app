@@ -1,7 +1,7 @@
 import { apiClient } from '../../auth/services/axiosInstance'
 import type { IDetallePedido, IHistorialEstado, IPedidoCreate, IPedido, IPedidoList } from '../IPedido'
 
-const BASE = '/pedidos'
+const BASE = '/api/v1/pedidos'
 
 export const pedidoService = {
   /**
@@ -14,7 +14,7 @@ export const pedidoService = {
 
   async getInitPoint(pedidoId: number): Promise<{ init_point: string }> {
     try {
-      const response = await apiClient.post<{ init_point: string }>(`/pagos/create-preference`, {
+      const response = await apiClient.post<{ init_point: string }>(`/api/v1/pagos/create-preference`, {
         pedido_id: pedidoId
       });
       return response.data;
@@ -64,11 +64,11 @@ export const pedidoService = {
 
   /**
    * Cancelar un pedido propio (solo PENDIENTE o CONFIRMADO)
-   * El backend no expone DELETE /pedidos/{id}, usa PATCH /pedidos/{id}/estado
-   * con estado_hacia: "CANCELADO" y motivo obligatorio.
+   * El backend expone POST /api/v1/pedidos/{id}/cancel con estado_hacia: "CANCELADO"
+   * y motivo obligatorio.
    */
   async cancelar(pedidoId: number, motivo: string): Promise<IPedido> {
-    const res = await apiClient.patch<IPedido>(`${BASE}/${pedidoId}/estado`, {
+    const res = await apiClient.post<IPedido>(`${BASE}/${pedidoId}/cancel`, {
       estado_hacia: 'CANCELADO',
       motivo,
     })

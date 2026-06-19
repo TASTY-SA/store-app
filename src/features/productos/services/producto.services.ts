@@ -1,7 +1,7 @@
 import type { IProducto } from "../IProducto";
 import apiClient from "../../auth/services/axiosInstance";
 
-const PATH = "/productos/";
+const PATH = "/api/v1/productos/";
 
 type PaginatedResponse = { data: IProducto[]; total: number };
 

@@ -1,28 +1,14 @@
 import type { ICategoria } from "../../categoria/ICategoria";
+import apiClient from "../../auth/services/axiosInstance";
 
-const BASE_URL = `${import.meta.env.VITE_API_URL}/categorias`;
+const PATH = "/api/v1/categorias";
 
 export const getCategorias = async (): Promise<{ data: ICategoria[]; total: number }> => {
-
-  try {
-    const response = await fetch(BASE_URL);
-    if (!response.ok) throw new Error("Error al obtener las categorías");
-    const data = await response.json();
-    return data;
-  } catch (error) {
-
-    console.log(error);
-    throw error; 
-  }
+  const res = await apiClient.get<{ data: ICategoria[]; total: number }>(`${PATH}/?offset=0&limit=100`);
+  return res.data;
 };
 
 export const getCategoriaById = async (id: number): Promise<ICategoria> => {
-  try {
-    const response = await fetch(`${BASE_URL}/${id}`);
-    const data: ICategoria = await response.json();
-    return data;
-  } catch (error) {
-    console.log(error);
-    throw error; 
-  }
+  const res = await apiClient.get<ICategoria>(`${PATH}/${id}`);
+  return res.data;
 };

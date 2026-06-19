@@ -11,7 +11,7 @@ import type { UserPublic, UserRegisterPayload, UserRole } from "../features/auth
  *    administrada por el navegador y el backend.
  *  - Zustand persiste únicamente `accessToken` como hint de UI
  *    (saber si había sesión activa para mostrar skeleton en lugar de login).
- *    La rehidratación real siempre se hace vía `checkAuth()` → `/auth/me`.
+ *    La rehidratación real siempre se hace vía `checkAuth()` → `/api/v1/auth/me`.
  *  - `accessToken` aquí es solo un indicador de presencia de sesión;
  *    la cookie httpOnly es el único token con valor de autenticación.
  */

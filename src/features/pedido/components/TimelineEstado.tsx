@@ -1,5 +1,5 @@
 import type { IHistorialEstado } from '../IPedido'
-import { ESTADOS, fmt } from './estadoConfig'
+import { ESTADOS } from './estadoConfig'
 
 interface Props {
   historial: IHistorialEstado[]

@@ -24,12 +24,12 @@ interface UseWebSocketOptions {
  * Deriva la URL del WebSocket a partir de VITE_API_BASE_URL.
  *
  * Ejemplo:
- *   http://localhost:8000  →  ws://localhost:8000/pedidos/cocina/ws
- *   https://api.midominio.com  →  wss://api.midominio.com/pedidos/cocina/ws
+ *   http://localhost:8000  →  ws://localhost:8000/api/v1/pedidos/cocina/ws
+ *   https://api.midominio.com  →  wss://api.midominio.com/api/v1/pedidos/cocina/ws
  */
 function getWsUrl(): string {
   const base = getApiBase()
-  return base.replace(/^http/, 'ws') + '/pedidos/cocina/ws'
+  return base.replace(/^http/, 'ws') + '/api/v1/pedidos/cocina/ws'
 }
 
 // ──────────────────────────────────────────────

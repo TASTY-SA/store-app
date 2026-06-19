@@ -2,7 +2,7 @@ import apiClient from "../../auth/services/axiosInstance";
 import type { ICliente, DireccionPublic, DireccionCreate } from "../IClientes";
 
 const AUTH = "/api/v1/auth";
-const DIR = "/direcciones";
+const DIR = "/api/v1/direcciones";
 
 /** Obtiene el perfil del usuario autenticado desde el backend. */
 export async function getPerfilCliente(): Promise<ICliente> {

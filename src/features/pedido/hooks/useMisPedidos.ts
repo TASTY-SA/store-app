@@ -46,7 +46,7 @@ export function useMisPedidos() {
 
   // Ref mutable para que el handler de WS (estable con []) pueda
   // llamar a la versión más reciente de fetchPedidos sin depender de ella.
-  const fetchPedidosRef = useRef<() => Promise<void>>()
+  const fetchPedidosRef = useRef<(() => Promise<void>) | undefined>(undefined)
 
   // ── Fetch ──────────────────────────────────
 
@@ -152,13 +152,16 @@ export function useMisPedidos() {
             return next
           })
 
+          // Cargar el historial actualizado del pedido para que la timeline se actualice en tiempo real
+          loadHistorial(data.id)
+
           // Invalidar cache de TanStack Query para que los componentes
           // que usan useQuery(['pedidos']) vean los datos frescos.
           queryClient.invalidateQueries({ queryKey: ['pedidos'] })
           break
         }
       }
-    }, []), // ← estable: usa refs para acceder a valores actuales
+    }, [loadHistorial, queryClient]),
   })
 
   // ── Efecto: fetch inicial + polling de fallback + refetch en foco ──
@@ -178,13 +181,16 @@ export function useMisPedidos() {
 
     // Refetch al ganar foco de la ventana (navegación de pestañas, etc.)
     const onFocus = () => fetchPedidosRef.current?.()
+    
     window.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') onFocus()
     })
+    window.addEventListener('focus', onFocus)
 
     return () => {
       clearInterval(interval)
       window.removeEventListener('visibilitychange', onFocus)
+      window.removeEventListener('focus', onFocus)
     }
   }, [fetchPedidos, isAuthenticated])
 
