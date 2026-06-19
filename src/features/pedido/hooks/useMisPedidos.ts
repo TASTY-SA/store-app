@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { pedidoService } from '../services/pedidoService'
 import type { IDetallePedido, IHistorialEstado, IPedido, EstadoCodigo } from '../IPedido'
 import { useWebSocket, type WsMessage } from '../../../hooks/useWebSocket'
@@ -36,165 +36,122 @@ export function useMisPedidos() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const queryClient = useQueryClient()
 
-  const [pedidos, setPedidos] = useState<PedidoConDetalles[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  // Estado local para data lazy-loaded (detalles e historial se cargan al hacer toggle)
+  const [detallesMap, setDetallesMap] = useState<Record<number, IDetallePedido[]>>({})
+  const [historialMap, setHistorialMap] = useState<Record<number, IHistorialEstado[]>>({})
 
   // Set de IDs de pedidos a los que YA estamos suscriptos vía WS,
   // para no enviar subscribe-order duplicados.
   const subscribedRef = useRef<Set<number>>(new Set())
 
-  // Ref mutable para que el handler de WS (estable con []) pueda
-  // llamar a la versión más reciente de fetchPedidos sin depender de ella.
-  const fetchPedidosRef = useRef<(() => Promise<void>) | undefined>(undefined)
+  // ── Main query ────────────────────────────────
+  // TanStack Query maneja: fetching, loading/error states, caching,
+  // refetch en foco, polling de fallback, y refetch manual.
 
-  // ── Fetch ──────────────────────────────────
-
-  const fetchPedidos = useCallback(async () => {
-    try {
-      const list = await pedidoService.getMisPedidos()
-      const pedidosOrdenados = [...list.data].sort(
+  const {
+    data: pedidosResp,
+    isLoading,
+    error: queryError,
+    refetch,
+  } = useQuery({
+    queryKey: ['pedidos'],
+    queryFn: () => pedidoService.getMisPedidos(),
+    enabled: isAuthenticated,
+    staleTime: 60_000, // 1 min — mientras el WS funcione los datos llegan en tiempo real
+    refetchInterval: 5 * 60_000, // polling de fallback cada 5 min si el WS falla
+    select: (resp) =>
+      [...resp.data].sort(
         (a, b) =>
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-      )
+      ),
+  })
 
-      // Fusionar con detalles ya cargados para no perderlos
-      setPedidos((prev) => {
-        const prevMap = new Map(prev.map((p) => [p.id, p]))
-        return pedidosOrdenados.map((p) => ({
-          ...p,
-          detalles: prevMap.get(p.id)?.detalles,
-        }))
-      })
-      setError(null)
-    } catch {
-      setError('No se pudieron cargar los pedidos.')
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  // Sincronizar la ref con la función real en cada render
-  fetchPedidosRef.current = fetchPedidos
-
-  // ── Detalles ───────────────────────────────
+  // ── Lazy load: detalles ───────────────────────
+  // Se llama desde TarjetaPedido cuando el usuario hace toggle "Ver artículos".
+  // Guardamos en un mapa local para mergear con los pedidos de la query.
 
   const loadDetalles = useCallback(async (pedidoId: number) => {
+    if (detallesMap[pedidoId]) return // ya cargado
     try {
       const detalles = await pedidoService.getDetalles(pedidoId)
-      setPedidos((prev) =>
-        prev.map((p) => (p.id === pedidoId ? { ...p, detalles } : p)),
-      )
+      setDetallesMap((prev) => ({ ...prev, [pedidoId]: detalles }))
     } catch {
       // Silencioso — los detalles son opcionales en la UI
     }
-  }, [])
+  }, [detallesMap])
 
-  // ── Historial ──────────────────────────────
+  // ── Lazy load: historial ──────────────────────
+  // Misma mecánica que loadDetalles, para la timeline de estados.
 
   const loadHistorial = useCallback(async (pedidoId: number) => {
+    if (historialMap[pedidoId]) return // ya cargado
     try {
       const historial = await pedidoService.getHistorial(pedidoId)
-      setPedidos((prev) =>
-        prev.map((p) => (p.id === pedidoId ? { ...p, historial } : p)),
-      )
+      setHistorialMap((prev) => ({ ...prev, [pedidoId]: historial }))
     } catch {
       // Silencioso
     }
-  }, [])
+  }, [historialMap])
 
-  // ── Cancelar pedido ────────────────────────
+  // ── Cancelar pedido ────────────────────────────
+  // useMutation con invalidación automática en onSuccess.
 
-  const cancelarPedido = useCallback(async (pedidoId: number, motivo: string) => {
-    try {
-      await pedidoService.cancelar(pedidoId, motivo)
-      // Refrescar la lista completa después de cancelar
-      fetchPedidosRef.current?.()
-    } catch {
-      throw new Error('No se pudo cancelar el pedido.')
-    }
-  }, [])
+  const { mutateAsync: cancelarMutation } = useMutation({
+    mutationFn: ({ pedidoId, motivo }: { pedidoId: number; motivo: string }) =>
+      pedidoService.cancelar(pedidoId, motivo),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pedidos'] })
+    },
+  })
 
-  // ── WebSocket ──────────────────────────────
+  const cancelarPedido = useCallback(
+    async (pedidoId: number, motivo: string) => {
+      try {
+        await cancelarMutation({ pedidoId, motivo })
+      } catch {
+        throw new Error('No se pudo cancelar el pedido.')
+      }
+    },
+    [cancelarMutation],
+  )
+
+  // ── WebSocket ──────────────────────────────────
 
   const { subscribeToOrder, unsubscribeFromOrder } = useWebSocket({
     enabled: isAuthenticated,
-    onMessage: useCallback((msg: WsMessage) => {
-      switch (msg.event) {
-        // ── Reconexión: recargar datos, invalidar cache y re-suscribirse
-        case 'WS_CONNECTED':
-          fetchPedidosRef.current?.()
-          queryClient.invalidateQueries({ queryKey: ['pedidos'] })
-          // subscribedRef se limpia para que el efecto de suscripción
-          // (más abajo) vuelva a enviar subscribe-order a los pedidos activos.
-          subscribedRef.current.clear()
-          break
+    onMessage: useCallback(
+      (msg: WsMessage) => {
+        switch (msg.event) {
+          // ── Reconexión: invalidar cache y re-suscribirse
+          case 'WS_CONNECTED':
+            queryClient.invalidateQueries({ queryKey: ['pedidos'] })
+            subscribedRef.current.clear()
+            break
 
-        // ── Eventos de transición de estado
-        case 'PEDIDO_CONFIRMADO':
-        case 'PEDIDO_EN_PREPARACION':
-        case 'PEDIDO_ENTREGADO':
-        case 'PEDIDO_CANCELADO': {
-          const data = msg.data as Partial<IPedido> | null
-          if (!data?.id) break
+          // ── Eventos de transición de estado
+          case 'PEDIDO_CONFIRMADO':
+          case 'PEDIDO_EN_PREPARACION':
+          case 'PEDIDO_ENTREGADO':
+          case 'PEDIDO_CANCELADO': {
+            const wsData = msg.data as Partial<IPedido> | null
+            if (!wsData?.id) break
 
-          setPedidos((prev) => {
-            const idx = prev.findIndex((p) => p.id === data.id)
-            if (idx === -1) {
-              // El pedido no está en nuestro listado local → probablemente
-              // es nuevo. No hacer nada; el próximo fetch (por
-              // WS_CONNECTED o polling de fallback) lo traerá.
-              return prev
-            }
-            const updated = { ...prev[idx], ...data }
-            const next = [...prev]
-            next[idx] = updated
-            return next
-          })
+            // Cargar historial actualizado para la timeline en tiempo real
+            loadHistorial(wsData.id)
 
-          // Cargar el historial actualizado del pedido para que la timeline se actualice en tiempo real
-          loadHistorial(data.id)
-
-          // Invalidar cache de TanStack Query para que los componentes
-          // que usan useQuery(['pedidos']) vean los datos frescos.
-          queryClient.invalidateQueries({ queryKey: ['pedidos'] })
-          break
+            // Invalidar query para que se refleje el cambio de estado
+            queryClient.invalidateQueries({ queryKey: ['pedidos'] })
+            break
+          }
         }
-      }
-    }, [loadHistorial, queryClient]),
+      },
+      [loadHistorial, queryClient],
+    ),
   })
 
-  // ── Efecto: fetch inicial + polling de fallback + refetch en foco ──
-  // Solo se activa cuando el usuario está autenticado.
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      setLoading(false)
-      return
-    }
-
-    fetchPedidos()
-
-    // Polling de fallback cada 5 minutos por si el WS se cae y la
-    // reconexión automática no logra recuperarse.
-    const interval = setInterval(fetchPedidos, 5 * 60_000)
-
-    // Refetch al ganar foco de la ventana (navegación de pestañas, etc.)
-    const onFocus = () => fetchPedidosRef.current?.()
-    
-    window.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') onFocus()
-    })
-    window.addEventListener('focus', onFocus)
-
-    return () => {
-      clearInterval(interval)
-      window.removeEventListener('visibilitychange', onFocus)
-      window.removeEventListener('focus', onFocus)
-    }
-  }, [fetchPedidos, isAuthenticated])
-
-  // ── Efecto: mantener suscripciones sincronizadas ──
+  // ── Efecto: mantener suscripciones WS sincronizadas ──
+  // Se re-ejecuta cuando cambia la lista de pedidos (nuevos pedidos,
+  // estados terminales, etc.)
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -204,8 +161,7 @@ export function useMisPedidos() {
 
     const activos = new Set<number>()
 
-    // Suscribir pedidos activos que aún no lo están
-    pedidos.forEach((p) => {
+    ;(pedidosResp ?? []).forEach((p) => {
       if (isNonTerminal(p.estado_codigo)) {
         activos.add(p.id)
         if (!subscribedRef.current.has(p.id)) {
@@ -215,16 +171,32 @@ export function useMisPedidos() {
       }
     })
 
-    // Desuscribir pedidos que ya no están activos (terminales)
+    // Desuscribir pedidos que ya están en estado terminal
     subscribedRef.current.forEach((id) => {
       if (!activos.has(id)) {
         unsubscribeFromOrder(id)
         subscribedRef.current.delete(id)
       }
     })
-  }, [pedidos, subscribeToOrder, unsubscribeFromOrder, isAuthenticated])
+  }, [pedidosResp, subscribeToOrder, unsubscribeFromOrder, isAuthenticated])
 
-  // ── Retorno ────────────────────────────────
+  // ── Merge: pedidos base + detalles lazy ────────
 
-  return { pedidos, loading, error, refetch: fetchPedidos, loadDetalles, loadHistorial, cancelarPedido }
+  const pedidos: PedidoConDetalles[] = useMemo(() => {
+    return (pedidosResp ?? []).map((p) => ({
+      ...p,
+      detalles: detallesMap[p.id],
+      historial: historialMap[p.id],
+    }))
+  }, [pedidosResp, detallesMap, historialMap])
+
+  // ── Error como string (compatibilidad con MisPedidosPage) ──
+
+  const error: string | null = queryError
+    ? (queryError as Error).message ?? 'Error al cargar los pedidos'
+    : null
+
+  // ── Retorno (misma interfaz que antes) ─────────
+
+  return { pedidos, loading: isLoading, error, refetch, loadDetalles, loadHistorial, cancelarPedido }
 }

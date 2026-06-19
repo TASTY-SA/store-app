@@ -213,6 +213,12 @@ export function TarjetaPedido({ pedido, onLoadDetalles, onLoadHistorial, onCance
                     <span>-{fmt(pedido.descuento)}</span>
                   </div>
                 )}
+                {pedido.costo_envio > 0 && (
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>Costo de envío</span>
+                    <span>{fmt(pedido.costo_envio)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-sm font-extrabold text-[#245433] border-t border-[#e8e5c0] mt-1 pt-1.5">
                   <span>Total</span>
                   <span className="text-[#1F8848]">{fmt(pedido.total)}</span>

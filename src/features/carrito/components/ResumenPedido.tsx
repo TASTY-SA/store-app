@@ -3,6 +3,7 @@ import { useState } from "react";
 interface ResumenPedidoProps {
   subtotal: number;
   totalItems: number;
+  costoEnvio?: number;
   onCheckout: () => void;
   loading?: boolean;
   error?: string | null;
@@ -14,6 +15,7 @@ const fmt = (n: number) =>
 export function ResumenPedido({
   subtotal,
   totalItems,
+  costoEnvio = subtotal > 0 ? 500 : 0,
   onCheckout,
   loading = false,
   error = null,
@@ -46,7 +48,7 @@ export function ResumenPedido({
   };
 
   const discountAmount = Math.round(subtotal * (discountPercent / 100));
-  const total = subtotal - discountAmount;
+  const total = subtotal + costoEnvio - discountAmount;
 
   return (
     <div className="rounded-3xl border border-[#e8e5c0] bg-[#fdfbd7]/50 p-6 shadow-sm">
@@ -69,7 +71,10 @@ export function ResumenPedido({
           </div>
         )}
 
-
+        <div className="flex justify-between">
+          <span>Envío</span>
+          <span className="font-semibold">{costoEnvio > 0 ? fmt(costoEnvio) : 'Gratis'}</span>
+        </div>
 
       </div>
 

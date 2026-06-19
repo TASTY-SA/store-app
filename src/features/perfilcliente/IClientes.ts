@@ -11,6 +11,7 @@ export interface ICliente {
   username: string;
   full_name: string;
   email: string;
+  celular?: string | null;
   disabled: boolean;
   roles: RolPublic[];
   /** URL o data-URL de la foto de perfil (solo local/frontend) */
@@ -37,6 +38,22 @@ export interface DireccionCreate {
   provincia?: string;
   codigo_postal?: string;
   es_principal: boolean;
+}
+
+export interface DireccionUpdate {
+  alias?: string;
+  linea1?: string;
+  linea2?: string;
+  ciudad?: string;
+  provincia?: string;
+  codigo_postal?: string;
+  es_principal?: boolean;
+}
+
+export interface UserUpdatePayload {
+  full_name?: string;
+  email?: string;
+  celular?: string;
 }
 
 export interface Preferencias {

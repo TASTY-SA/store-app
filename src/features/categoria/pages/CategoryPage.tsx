@@ -24,24 +24,24 @@ export const CategoryPage = () => {
   };
 
   const { data: categories = [], isLoading, isError } = useQuery({
-    queryKey: ["categories"],
+    queryKey: ["categorias"],
     queryFn: getCategorias,
     staleTime: 1000 * 60 * 2,
   });
 
   const createMutation = useMutation({
     mutationFn: createCategory,
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["categories"] }); handleCloseModal(); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["categorias"] }); handleCloseModal(); },
   });
 
   const editMutation = useMutation({
     mutationFn: ({ id, category }: { id: string; category: Omit<ICategoria, "id"> }) => updateCategory(id, category),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["categories"] }); handleCloseModal(); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["categorias"] }); handleCloseModal(); },
   });
 
   const deleteMutation = useMutation({
     mutationFn: deleteCategory,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["categories"] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["categorias"] }),
   });
 
   if (isLoading) return <div className="p-8 text-center text-black animate-pulse">Cargando categorías...</div>;

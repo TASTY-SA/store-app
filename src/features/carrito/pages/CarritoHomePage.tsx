@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import { useCartStore } from '../../../store/cartStore'
 import { useAuthStore } from '../../../store/authStore'
 import { NavBar } from '../../../shared/NavBar/NavBar'
@@ -14,11 +15,13 @@ export function CarritoHomePage() {
     useCartStore()
   const { isAuthenticated } = useAuthStore()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
 
   // ── Estados ────────────────────────────────
 
   const [checkoutLoading, setCheckoutLoading] = useState(false)
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
+  const costoEnvio = subtotal > 0 ? 500 : 0
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [showCheckoutModal, setShowCheckoutModal] = useState(false)
   const [mpSimulando, setMpSimulando] = useState(false)
@@ -66,6 +69,9 @@ export function CarritoHomePage() {
             notas: item.notas || null,
           })),
         })
+
+        // Invalidar cache de pedidos para que se refleje el nuevo pedido
+        queryClient.invalidateQueries({ queryKey: ['pedidos'] })
 
         if (metodo === 'MERCADOPAGO') {
           setMpSimulando(true)
@@ -162,6 +168,7 @@ export function CarritoHomePage() {
               <ResumenPedido
                 subtotal={subtotal}
                 totalItems={totalItems}
+                costoEnvio={costoEnvio}
                 onCheckout={handleCheckoutClick}
                 loading={checkoutLoading}
                 error={checkoutError}
@@ -177,7 +184,9 @@ export function CarritoHomePage() {
       {/* ── Modal de checkout (dirección + pago) ── */}
       {showCheckoutModal && (
         <CheckoutModal
-          total={subtotal}
+          total={subtotal + costoEnvio}
+          subtotal={subtotal}
+          costoEnvio={costoEnvio}
           loading={checkoutLoading}
           error={checkoutError}
           onConfirm={handleCheckoutConfirm}

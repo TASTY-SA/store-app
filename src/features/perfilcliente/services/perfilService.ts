@@ -1,5 +1,6 @@
 import apiClient from "../../auth/services/axiosInstance";
-import type { ICliente, DireccionPublic, DireccionCreate } from "../IClientes";
+import type { ICliente, DireccionPublic, DireccionCreate, DireccionUpdate, UserUpdatePayload } from "../IClientes";
+import type { UserPublic } from "../../auth/types";
 
 const AUTH = "/api/v1/auth";
 const DIR = "/api/v1/direcciones";
@@ -7,6 +8,12 @@ const DIR = "/api/v1/direcciones";
 /** Obtiene el perfil del usuario autenticado desde el backend. */
 export async function getPerfilCliente(): Promise<ICliente> {
   const response = await apiClient.get<ICliente>(`${AUTH}/me`);
+  return response.data;
+}
+
+/** Actualiza los datos del perfil del usuario autenticado. */
+export async function actualizarPerfil(data: UserUpdatePayload): Promise<UserPublic> {
+  const response = await apiClient.patch<UserPublic>(`${AUTH}/me`, data);
   return response.data;
 }
 
@@ -21,6 +28,18 @@ export async function getDirecciones(): Promise<DireccionPublic[]> {
 /** Crea una nueva dirección para el usuario autenticado. */
 export async function crearDireccion(data: DireccionCreate): Promise<DireccionPublic> {
   const response = await apiClient.post<DireccionPublic>(`${DIR}/`, data);
+  return response.data;
+}
+
+/** Marca una dirección como principal (PATCH /direcciones/{id}/principal). */
+export async function setDireccionPrincipal(id: number): Promise<DireccionPublic> {
+  const response = await apiClient.patch<DireccionPublic>(`${DIR}/${id}/principal`);
+  return response.data;
+}
+
+/** Actualiza una dirección existente (PATCH /direcciones/{id}). */
+export async function actualizarDireccion(id: number, data: DireccionUpdate): Promise<DireccionPublic> {
+  const response = await apiClient.patch<DireccionPublic>(`${DIR}/${id}`, data);
   return response.data;
 }
 

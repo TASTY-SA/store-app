@@ -38,6 +38,25 @@ export function DatosPersonalesCard({ perfil }: Props) {
           </div>
         </div>
 
+        {/* Celular */}
+        <div>
+          <label className="block text-[10px] font-bold uppercase tracking-wider text-[#245433]/50 mb-1.5">
+            Celular
+          </label>
+          <div className="text-sm font-semibold text-[#1a2e22] bg-[#fdfbd7] border border-[#245433]/15 rounded-xl px-3.5 py-2.5">
+            {perfil.celular ? (
+              <span className="flex items-center gap-1.5">
+                <svg className="w-3.5 h-3.5 text-[#47aa66]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0h4" />
+                </svg>
+                {perfil.celular}
+              </span>
+            ) : (
+              <span className="text-[#245433]/40 italic">No cargado</span>
+            )}
+          </div>
+        </div>
+
         {/* Username */}
         <div>
           <label className="block text-[10px] font-bold uppercase tracking-wider text-[#245433]/50 mb-1.5">
@@ -47,18 +66,6 @@ export function DatosPersonalesCard({ perfil }: Props) {
             @{perfil.username}
           </div>
         </div>
-
-        {/* Guardar cambios (decorativo, será funcional en editar perfil) */}
-        <button
-          onClick={() => {/* Funcional en editar perfil */}}
-          disabled
-          className="flex items-center justify-center gap-2 w-full bg-[#1F8848] text-white text-sm font-bold rounded-xl py-2.5 opacity-50 cursor-not-allowed"
-        >
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-          </svg>
-          Guardar Cambios
-        </button>
       </div>
     </div>
   );

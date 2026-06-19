@@ -10,6 +10,8 @@ export type MetodoPago = 'EFECTIVO' | 'MERCADOPAGO'
 
 interface CheckoutModalProps {
   total: number
+  subtotal?: number
+  costoEnvio?: number
   loading?: boolean
   error?: string | null
   onConfirm: (data: { metodo: MetodoPago; direccionId?: number }) => void
@@ -75,6 +77,8 @@ const OPCIONES_PAGO: PagoOption[] = [
 
 export function CheckoutModal({
   total,
+  subtotal,
+  costoEnvio,
   loading = false,
   error = null,
   onConfirm,
@@ -338,9 +342,25 @@ export function CheckoutModal({
 
         {/* ── Total ────────────────────────────── */}
         <div className="mx-6 mb-2">
-          <div className="flex items-center justify-between px-5 py-3 bg-[#f7f6d8]/80 border border-[#e8e5c0] rounded-2xl">
-            <span className="text-sm font-bold text-[#245433]">Total a pagar</span>
-            <span className="text-xl font-black text-[#1F8848]">{fmt(total)}</span>
+          <div className="p-4 bg-[#f7f6d8]/80 border border-[#e8e5c0] rounded-2xl">
+            <div className="flex flex-col gap-1.5 text-xs">
+              {subtotal !== undefined && (
+                <div className="flex justify-between text-[#245433]/70">
+                  <span>Subtotal</span>
+                  <span>{fmt(subtotal)}</span>
+                </div>
+              )}
+              {costoEnvio !== undefined && costoEnvio > 0 && (
+                <div className="flex justify-between text-[#245433]/70">
+                  <span>Envío</span>
+                  <span>{fmt(costoEnvio)}</span>
+                </div>
+              )}
+            </div>
+            <div className="flex items-center justify-between pt-2 mt-2 border-t border-[#e8e5c0]">
+              <span className="text-sm font-bold text-[#245433]">Total a pagar</span>
+              <span className="text-xl font-black text-[#1F8848]">{fmt(total)}</span>
+            </div>
           </div>
         </div>
 

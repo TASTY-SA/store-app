@@ -29,9 +29,24 @@ export function RegisterPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  /** Valida que el celular tenga al menos 7 dígitos y solo caracteres válidos */
+  const validarCelular = (tel: string): string | null => {
+    const soloDigitos = tel.replace(/\D/g, "");
+    if (soloDigitos.length < 7) return "El celular debe tener al menos 7 dígitos";
+    if (soloDigitos.length > 15) return "El celular es demasiado largo";
+    if (!/^[\d\s\+\-\(\)]+$/.test(tel.trim())) return "Formato de celular inválido";
+    return null;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLocalError(null);
+
+    const errorCelular = validarCelular(formData.celular);
+    if (errorCelular) {
+      setLocalError(errorCelular);
+      return;
+    }
 
     if (formData.password !== passwordConfirm) {
       setLocalError("Las contraseñas no coinciden");
