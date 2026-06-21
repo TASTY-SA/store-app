@@ -9,10 +9,16 @@
   --color-lime-cream: #fdfbd7;
 
   --animate-fade-in: fadeIn 0.25s ease-out;
+  --animate-slide-up: slideUp 0.3s ease-out;
 
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(-6px); }
     to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(16px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
   }
 }
 

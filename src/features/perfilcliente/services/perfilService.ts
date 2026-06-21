@@ -12,8 +12,8 @@ export async function getPerfilCliente(): Promise<ICliente> {
 }
 
 /** Actualiza los datos del perfil del usuario autenticado. */
-export async function actualizarPerfil(data: UserUpdatePayload): Promise<UserPublic> {
-  const response = await apiClient.patch<UserPublic>(`${AUTH}/me`, data);
+export async function actualizarPerfil(userId: number, data: UserUpdatePayload): Promise<UserPublic> {
+  const response = await apiClient.patch<UserPublic>(`${AUTH}/usuarios/${userId}`, data);
   return response.data;
 }
 
@@ -31,9 +31,9 @@ export async function crearDireccion(data: DireccionCreate): Promise<DireccionPu
   return response.data;
 }
 
-/** Marca una dirección como principal (PATCH /direcciones/{id}/principal). */
+/** Marca una dirección como principal (PATCH /direcciones/{id} con es_principal=true). */
 export async function setDireccionPrincipal(id: number): Promise<DireccionPublic> {
-  const response = await apiClient.patch<DireccionPublic>(`${DIR}/${id}/principal`);
+  const response = await apiClient.patch<DireccionPublic>(`${DIR}/${id}`, { es_principal: true });
   return response.data;
 }
 

@@ -3,6 +3,7 @@ import { NavBar } from '../../../shared/NavBar/NavBar'
 import { useAuthStore } from '../../../store/authStore'
 import { useMisPedidos } from '../hooks/useMisPedidos'
 import { TarjetaPedido } from '../components/TarjetaPedido'
+import { SkeletonPedidoCard } from '../../../shared/components/Skeleton'
 import type { IPedido } from '../IPedido'
 
 function groupByStatus(pedidos: IPedido[]) {
@@ -68,11 +69,12 @@ export function MisPedidosPage() {
           </div>
         )}
 
-        {/* Loading */}
+        {/* Loading — skeletons */}
         {loading && (
-          <div className="flex flex-col items-center gap-4 py-16 text-[#245433]/60 text-sm font-semibold">
-            <div className="w-9 h-9 border-[3px] border-[#c8e6c9] border-t-[#1F8848] rounded-full animate-spin" />
-            <p>Cargando pedidos...</p>
+          <div className="flex flex-col gap-5">
+            {[1, 2, 3].map((i) => (
+              <SkeletonPedidoCard key={i} />
+            ))}
           </div>
         )}
 

@@ -3,8 +3,10 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "../../../store/authStore";
+import { useToastStore } from "../../../store/toastStore";
 import { getPerfilCliente, actualizarPerfil } from "../services/perfilService";
 import { NavBar } from "../../../shared/NavBar/NavBar";
+import { Skeleton, SkeletonPerfilForm } from "../../../shared/components/Skeleton";
 
 function parseFullName(full_name: string) {
   const parts = full_name.trim().split(/\s+/);
@@ -44,6 +46,7 @@ export function EditarPerfilPage() {
 
   // ─── Estado de éxito ───────────────────────────────────────────────────
   const [showSuccess, setShowSuccess] = useState(false);
+  const addToast = useToastStore((s) => s.addToast);
 
   // ─── Validación de celular ─────────────────────────────────────────────
   const [celularError, setCelularError] = useState<string | null>(null);
@@ -65,14 +68,18 @@ export function EditarPerfilPage() {
   // ─── Mutación ─────────────────────────────────────────────────────────────
   const { mutate: guardar, isPending: guardando } = useMutation({
     mutationFn: () =>
-      actualizarPerfil({
+      actualizarPerfil(perfil!.id, {
         full_name: `${nombre} ${apellido}`.trim(),
         email,
         celular: celular || undefined,
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["perfil"] });
+      addToast("Perfil actualizado correctamente", "success");
       setShowSuccess(true);
+    },
+    onError: () => {
+      addToast("Error al guardar el perfil. Intentá de nuevo.", "error");
     },
   });
 
@@ -112,9 +119,10 @@ export function EditarPerfilPage() {
     return (
       <div className="min-h-screen bg-[#f7f6d8] flex flex-col text-[#245433]">
         <NavBar />
-        <main className="flex-1 flex flex-col items-center justify-center gap-4 py-16 text-[#245433]/60 text-sm font-semibold">
-          <div className="w-9 h-9 border-[3px] border-[#c8e6c9] border-t-[#1F8848] rounded-full animate-spin" />
-          <p>Cargando...</p>
+        <main className="flex-1 w-full max-w-[600px] mx-auto px-5 pt-8 pb-20">
+          <Skeleton className="h-5 w-28 mb-4" />
+          <Skeleton className="h-9 sm:h-10 w-48 mb-6" />
+          <SkeletonPerfilForm />
         </main>
       </div>
     );

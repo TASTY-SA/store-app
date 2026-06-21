@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { AppRouter } from './router/AppRouter'
 import { useAuthStore } from './store/authStore'
+import { ToastContainer } from './shared/components/ToastContainer'
 
 function App() {
   useEffect(() => {
@@ -11,7 +12,10 @@ function App() {
   }, [])
 
   return (
-    <AppRouter />
+    <>
+      <AppRouter />
+      <ToastContainer />
+    </>
   )
 }
 

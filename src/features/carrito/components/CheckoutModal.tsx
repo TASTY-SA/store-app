@@ -12,6 +12,7 @@ interface CheckoutModalProps {
   total: number
   subtotal?: number
   costoEnvio?: number
+  descuento?: number
   loading?: boolean
   error?: string | null
   onConfirm: (data: { metodo: MetodoPago; direccionId?: number }) => void
@@ -79,6 +80,7 @@ export function CheckoutModal({
   total,
   subtotal,
   costoEnvio,
+  descuento = 0,
   loading = false,
   error = null,
   onConfirm,
@@ -348,6 +350,12 @@ export function CheckoutModal({
                 <div className="flex justify-between text-[#245433]/70">
                   <span>Subtotal</span>
                   <span>{fmt(subtotal)}</span>
+                </div>
+              )}
+              {descuento > 0 && (
+                <div className="flex justify-between text-emerald-600 font-medium">
+                  <span>Descuento</span>
+                  <span>-{fmt(descuento)}</span>
                 </div>
               )}
               {costoEnvio !== undefined && costoEnvio > 0 && (

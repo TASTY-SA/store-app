@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface ResumenPedidoProps {
   subtotal: number;
@@ -7,6 +7,7 @@ interface ResumenPedidoProps {
   onCheckout: () => void;
   loading?: boolean;
   error?: string | null;
+  onDiscountChange?: (amount: number) => void;
 }
 
 const fmt = (n: number) =>
@@ -15,10 +16,11 @@ const fmt = (n: number) =>
 export function ResumenPedido({
   subtotal,
   totalItems,
-  costoEnvio = subtotal > 0 ? 500 : 0,
+  costoEnvio = subtotal > 0 ? 50 : 0,
   onCheckout,
   loading = false,
   error = null,
+  onDiscountChange,
 }: ResumenPedidoProps) {
   const [promoCode, setPromoCode] = useState("");
   const [discountPercent, setDiscountPercent] = useState(0);
@@ -26,6 +28,13 @@ export function ResumenPedido({
   const [promoStatus, setPromoStatus] = useState<"idle" | "success" | "error">("idle");
 
   // Tarifas de envío e impuestos simulados (fijos si hay elementos, 0 si está vacío)
+
+  const discountAmount = Math.round(subtotal * (discountPercent / 100));
+
+  // Notificar al padre cuando cambie el descuento
+  useEffect(() => {
+    onDiscountChange?.(discountAmount);
+  }, [discountAmount, onDiscountChange]);
 
   const handleApplyPromo = (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,7 +56,6 @@ export function ResumenPedido({
     }
   };
 
-  const discountAmount = Math.round(subtotal * (discountPercent / 100));
   const total = subtotal + costoEnvio - discountAmount;
 
   return (

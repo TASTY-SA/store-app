@@ -1,6 +1,8 @@
 // ─── DireccionesCard: Listado, crear, editar, establecer principal ──────────
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useToastStore } from "../../../store/toastStore";
+import { Skeleton } from "../../../shared/components/Skeleton";
 import { getDirecciones, crearDireccion, actualizarDireccion, eliminarDireccion, setDireccionPrincipal } from "../services/perfilService";
 import type { DireccionCreate, DireccionUpdate, DireccionPublic } from "../IClientes";
 
@@ -166,6 +168,7 @@ function DireccionFormModal({ title, initial, onClose, onSave, saving }: Direcci
 // ── Componente principal ──────────────────────────────────────────────────────
 export function DireccionesCard() {
   const qc = useQueryClient();
+  const addToast = useToastStore((s) => s.addToast);
 
   // Modal states
   const [showCreate, setShowCreate] = useState(false);
@@ -183,7 +186,11 @@ export function DireccionesCard() {
     mutationFn: (f: FormState) => crearDireccion(formToCreate(f)),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["direcciones"] });
+      addToast("Dirección guardada ✅", "success");
       setShowCreate(false);
+    },
+    onError: () => {
+      addToast("Error al guardar la dirección.", "error");
     },
   });
 
@@ -191,18 +198,34 @@ export function DireccionesCard() {
     mutationFn: ({ id, f }: { id: number; f: FormState }) => actualizarDireccion(id, formToUpdate(f)),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["direcciones"] });
+      addToast("Dirección actualizada ✅", "success");
       setEditandoId(null);
+    },
+    onError: () => {
+      addToast("Error al actualizar la dirección.", "error");
     },
   });
 
   const { mutate: eliminar } = useMutation({
     mutationFn: eliminarDireccion,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["direcciones"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["direcciones"] });
+      addToast("Dirección eliminada", "info");
+    },
+    onError: () => {
+      addToast("Error al eliminar la dirección.", "error");
+    },
   });
 
   const { mutate: setPrincipal } = useMutation({
     mutationFn: setDireccionPrincipal,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["direcciones"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["direcciones"] });
+      addToast("Dirección principal actualizada", "success");
+    },
+    onError: () => {
+      addToast("Error al actualizar dirección principal.", "error");
+    },
   });
 
   const direccionEditando = editandoId !== null
@@ -237,7 +260,7 @@ export function DireccionesCard() {
           {isLoading ? (
             <div className="space-y-2">
               {[1, 2].map((i) => (
-                <div key={i} className="h-16 rounded-xl bg-[#f0f0f0] animate-pulse" />
+                <Skeleton key={i} className="h-16 w-full" />
               ))}
             </div>
           ) : direcciones.length === 0 ? (

@@ -4,6 +4,7 @@ import { pedidoService } from '../services/pedidoService'
 import type { IDetallePedido, IHistorialEstado, IPedido, EstadoCodigo } from '../IPedido'
 import { useWebSocket, type WsMessage } from '../../../hooks/useWebSocket'
 import { useAuthStore } from '../../../store/authStore'
+import { usePedidoStore } from '../../../store/pedidoStore'
 
 // ──────────────────────────────────────────────
 // Constantes
@@ -17,6 +18,14 @@ function isTerminal(estado: EstadoCodigo): boolean {
 
 function isNonTerminal(estado: EstadoCodigo): boolean {
   return !isTerminal(estado)
+}
+
+// Mapeo de eventos WS a estado_codigo
+const WS_EVENT_TO_ESTADO: Record<string, EstadoCodigo> = {
+  PEDIDO_CONFIRMADO: 'CONFIRMADO',
+  PEDIDO_EN_PREPARACION: 'EN_PREP',
+  PEDIDO_ENTREGADO: 'ENTREGADO',
+  PEDIDO_CANCELADO: 'CANCELADO',
 }
 
 // ──────────────────────────────────────────────
@@ -136,10 +145,16 @@ export function useMisPedidos() {
             const wsData = msg.data as Partial<IPedido> | null
             if (!wsData?.id) break
 
+            // Sincronizar pedidoStore para UI reactiva inmediata
+            const nuevoEstado = WS_EVENT_TO_ESTADO[msg.event]
+            if (nuevoEstado) {
+              usePedidoStore.getState().updatePedidoEstado(wsData.id, nuevoEstado)
+            }
+
             // Cargar historial actualizado para la timeline en tiempo real
             loadHistorial(wsData.id)
 
-            // Invalidar query para que se refleje el cambio de estado
+            // Invalidar query para que se refleje el cambio de estado definitivo
             queryClient.invalidateQueries({ queryKey: ['pedidos'] })
             break
           }
@@ -189,6 +204,15 @@ export function useMisPedidos() {
       historial: historialMap[p.id],
     }))
   }, [pedidosResp, detallesMap, historialMap])
+
+  // ── Sincronizar pedidoStore con pedidos activos ──
+  // Mantiene el store al día para que cualquier otro componente
+  // pueda consultar los pedidos activos sin depender de TanStack Query.
+
+  useEffect(() => {
+    const activos = pedidos.filter((p) => isNonTerminal(p.estado_codigo))
+    usePedidoStore.getState().setPedidosActivos(activos)
+  }, [pedidos])
 
   // ── Error como string (compatibilidad con MisPedidosPage) ──
 

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
+import { useToastStore } from '../../../store/toastStore'
 import type { IDetallePedido, IHistorialEstado, IPedido } from '../IPedido'
 import { ESTADOS, FORMA_PAGO_LABEL, fmt } from './estadoConfig'
 import { BarraEstado } from './BarraEstado'
@@ -26,6 +27,7 @@ const PUEDE_CANCELAR = (codigo: string) =>
   codigo === 'PENDIENTE' || codigo === 'CONFIRMADO'
 
 export function TarjetaPedido({ pedido, onLoadDetalles, onLoadHistorial, onCancel }: TarjetaPedidoProps) {
+  const addToast = useToastStore((s) => s.addToast)
   const [showDetalles, setShowDetalles] = useState(false)
   const [showTimeline, setShowTimeline] = useState(false)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
@@ -58,10 +60,13 @@ export function TarjetaPedido({ pedido, onLoadDetalles, onLoadHistorial, onCance
     setCancelError(null)
     try {
       await onCancel(pedido.id, cancelMotivo)
+      addToast('Pedido cancelado', 'info')
       setShowCancelConfirm(false)
       setCancelMotivo('')
     } catch (err: any) {
-      setCancelError(err?.message ?? 'Error al cancelar el pedido.')
+      const msg = err?.message ?? 'Error al cancelar el pedido.'
+      addToast(msg, 'error')
+      setCancelError(msg)
     } finally {
       setCancelling(false)
     }
@@ -136,6 +141,30 @@ export function TarjetaPedido({ pedido, onLoadDetalles, onLoadHistorial, onCance
         </div>
       )}
 
+      {/* Breakdown de importes — siempre visible (como en el carrito) */}
+      <div className="px-5 sm:px-6 pb-4">
+        <div className="bg-white/60 rounded-xl border border-[#e8e5c0] p-3 flex flex-col gap-1.5 text-sm">
+          <div className="flex justify-between text-[#245433]/80">
+            <span>Subtotal</span>
+            <span className="font-semibold">{fmt(pedido.subtotal)}</span>
+          </div>
+          {pedido.descuento > 0 && (
+            <div className="flex justify-between text-emerald-600 font-medium">
+              <span>Descuento</span>
+              <span>-{fmt(pedido.descuento)}</span>
+            </div>
+          )}
+          <div className="flex justify-between text-[#245433]/80">
+            <span>Envío</span>
+            <span className="font-semibold">{pedido.costo_envio > 0 ? fmt(pedido.costo_envio) : 'Gratis'}</span>
+          </div>
+          <div className="flex justify-between font-extrabold text-[#245433] border-t border-[#e8e5c0] mt-1 pt-2">
+            <span>Total</span>
+            <span className="text-[#1F8848]">{fmt(pedido.total)}</span>
+          </div>
+        </div>
+      </div>
+
       {/* Timeline */}
       <div className="border-t border-black/5 px-5 sm:px-6">
         <button
@@ -201,30 +230,7 @@ export function TarjetaPedido({ pedido, onLoadDetalles, onLoadHistorial, onCance
                 Cargando artículos...
               </div>
             )}
-            {pedido.detalles && pedido.detalles.length > 0 && (
-              <div className="mt-3 p-3 bg-white/50 rounded-xl border border-[#e8e5c0] flex flex-col gap-1">
-                <div className="flex justify-between text-xs text-gray-500">
-                  <span>Subtotal</span>
-                  <span>{fmt(pedido.subtotal)}</span>
-                </div>
-                {pedido.descuento > 0 && (
-                  <div className="flex justify-between text-xs text-emerald-700 font-medium">
-                    <span>Descuento</span>
-                    <span>-{fmt(pedido.descuento)}</span>
-                  </div>
-                )}
-                {pedido.costo_envio > 0 && (
-                  <div className="flex justify-between text-xs text-gray-500">
-                    <span>Costo de envío</span>
-                    <span>{fmt(pedido.costo_envio)}</span>
-                  </div>
-                )}
-                <div className="flex justify-between text-sm font-extrabold text-[#245433] border-t border-[#e8e5c0] mt-1 pt-1.5">
-                  <span>Total</span>
-                  <span className="text-[#1F8848]">{fmt(pedido.total)}</span>
-                </div>
-              </div>
-            )}
+
           </div>
         )}
       </div>

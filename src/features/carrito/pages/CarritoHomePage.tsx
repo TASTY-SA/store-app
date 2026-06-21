@@ -1,8 +1,10 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCartStore } from '../../../store/cartStore'
 import { useAuthStore } from '../../../store/authStore'
+import { useToastStore } from '../../../store/toastStore'
+import { usePagoStore } from '../../../store/pagoStore'
 import { NavBar } from '../../../shared/NavBar/NavBar'
 import { CarritoItemCard } from '../components/CarritoItemCard'
 import { ResumenPedido } from '../components/ResumenPedido'
@@ -21,7 +23,14 @@ export function CarritoHomePage() {
 
   const [checkoutLoading, setCheckoutLoading] = useState(false)
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
-  const costoEnvio = subtotal > 0 ? 500 : 0
+  const addToast = useToastStore((s) => s.addToast)
+
+  // Resetear pagoStore al montar (por si volvemos atrás tras un error/éxito)
+  useEffect(() => {
+    usePagoStore.getState().reset()
+  }, [])
+  const [discountAmount, setDiscountAmount] = useState(0)
+  const costoEnvio = subtotal > 0 ? 50 : 0
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [showCheckoutModal, setShowCheckoutModal] = useState(false)
   const [mpSimulando, setMpSimulando] = useState(false)
@@ -50,6 +59,7 @@ export function CarritoHomePage() {
       setCheckoutLoading(true)
       setCheckoutError(null)
       setShowCheckoutModal(false)
+      usePagoStore.getState().setPagoStatus('pending')
 
       try {
         // ── Juntar notas de todos los items ──────────
@@ -63,6 +73,7 @@ export function CarritoHomePage() {
           forma_pago_codigo: metodo,
           direccion_id: direccionId ?? null,
           notas: notasPedido,
+          descuento: discountAmount > 0 ? discountAmount : undefined,
           items: items.map((item) => ({
             producto_id: item.producto.id!,
             cantidad: item.cantidad,
@@ -87,7 +98,11 @@ export function CarritoHomePage() {
           }
         }
 
+        usePagoStore.getState().setPagoStatus('success')
+        addToast('Pedido creado con éxito ✅', 'success')
         clearCart()
+        // Resetear pagoStore después de navegar
+        setTimeout(() => usePagoStore.getState().reset(), 200)
         navigate('/pedidos')
       } catch (err: any) {
         const detail = err?.response?.data?.detail
@@ -97,12 +112,15 @@ export function CarritoHomePage() {
             : Array.isArray(detail)
               ? detail.map((d: any) => d.msg).join(', ')
               : 'Ocurrió un error al procesar el pedido.'
+        usePagoStore.getState().setPagoStatus('error')
+        usePagoStore.getState().setError(msg)
+        addToast(msg, 'error')
         setCheckoutError(msg)
       } finally {
         setCheckoutLoading(false)
       }
     },
-    [items, clearCart, navigate],
+    [items, discountAmount, clearCart, navigate],
   )
 
   return (
@@ -172,6 +190,7 @@ export function CarritoHomePage() {
                 onCheckout={handleCheckoutClick}
                 loading={checkoutLoading}
                 error={checkoutError}
+                onDiscountChange={setDiscountAmount}
               />
             </div>
           </div>
@@ -184,9 +203,10 @@ export function CarritoHomePage() {
       {/* ── Modal de checkout (dirección + pago) ── */}
       {showCheckoutModal && (
         <CheckoutModal
-          total={subtotal + costoEnvio}
+          total={subtotal + costoEnvio - discountAmount}
           subtotal={subtotal}
           costoEnvio={costoEnvio}
+          descuento={discountAmount}
           loading={checkoutLoading}
           error={checkoutError}
           onConfirm={handleCheckoutConfirm}

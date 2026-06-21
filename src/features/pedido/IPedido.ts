@@ -51,6 +51,7 @@ export interface IPedidoCreate {
   direccion_id?: number | null
   forma_pago_codigo: string
   notas?: string | null
+  descuento?: number
   items: {
     producto_id: number
     cantidad: number
