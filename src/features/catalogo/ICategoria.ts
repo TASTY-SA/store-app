@@ -1,8 +1,8 @@
 export interface ICategoria {
-  id: number;
+  id?: number;
   nombre: string;
   descripcion: string;
-  imagen_url: string;
-  is_active: boolean;
+  imagen_url?: string;
   parent_id?: number | null;
+  is_active?: boolean;
 }

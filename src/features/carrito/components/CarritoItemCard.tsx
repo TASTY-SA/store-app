@@ -37,7 +37,7 @@ export function CarritoItemCard({
       {/* Imagen */}
       <div className="h-20 w-full shrink-0 overflow-hidden rounded-xl border border-[#e8e5c0] sm:h-24 sm:w-24">
         <img
-          src={producto.imagen_url || "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400"}
+          src={producto.imagenes_url?.[0] ?? producto.imagen_url ?? "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400"}
           alt={producto.nombre}
           className="h-full w-full object-cover"
           onError={(e) => {

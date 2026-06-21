@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import apiClient from "../../auth/services/axiosInstance";
 import type { IProducto } from "../../productos/IProducto";
-import type { ICategoria } from "../../categoria/ICategoria";
+import type { ICategoria } from "../ICategoria";
 import { useCartStore } from "../../../store/cartStore";
 import { useAuthStore } from "../../../store/authStore";
 import { RequireAuthModal } from "../../auth/components/RequireAuthModal";
@@ -79,7 +79,7 @@ function ProductCard({
       {/* image */}
       <div className="relative h-48 overflow-hidden">
         <img
-          src={producto.imagen_url || "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400"}
+          src={producto.imagenes_url?.[0] ?? producto.imagen_url ?? "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400"}
           alt={producto.nombre}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
           onError={(e) => {

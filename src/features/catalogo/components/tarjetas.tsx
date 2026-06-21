@@ -34,7 +34,7 @@ export const TarjetasPromos = () => {
     <div className="relative flex bg-[#F8E1A5] text-[#000000] h-128 w-300 my-10 mx-auto rounded-2xl overflow-hidden shadow-lg">
       <img 
         className="w-2/5 h-full object-cover"
-        src={productoPromo.imagen_url || "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500"}
+        src={productoPromo.imagenes_url?.[0] ?? productoPromo.imagen_url ?? "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500"}
         alt={productoPromo.nombre}
       />
 

@@ -1,4 +1,4 @@
-import type { ICategoria } from "../categoria/ICategoria";
+import type { ICategoria } from "../catalogo/ICategoria";
 
 export interface IProducto {
   id?: number;
@@ -7,7 +7,8 @@ export interface IProducto {
   precio_base: number;
   stock_cantidad: number;
   unidad_medida: IUnidadMedida;
-  imagen_url: string;
+  imagenes_url?: string[];
+  imagen_url?: string;
   is_active?: boolean;
   categorias?: ICategoria[];
   ingredientes?: IIngrediente[];

@@ -58,7 +58,7 @@ export function ProductDetailModal({ producto, onClose }: Props) {
         {/* Image */}
         <div className="relative h-56 sm:h-64">
           <img
-            src={producto.imagen_url || 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600'}
+            src={producto.imagenes_url?.[0] ?? producto.imagen_url ?? 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600'}
             alt={producto.nombre}
             className="h-full w-full object-cover"
             onError={(e) => {

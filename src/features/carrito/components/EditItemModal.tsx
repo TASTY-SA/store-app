@@ -36,7 +36,7 @@ export function EditItemModal({ item, onClose, onSave }: EditItemModalProps) {
         <div className="mt-4 flex flex-col gap-3">
           <div className="flex gap-4">
             <img 
-              src={item.producto.imagen_url || "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400"} 
+              src={item.producto.imagenes_url?.[0] ?? item.producto.imagen_url ?? "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400"} 
               alt={item.producto.nombre} 
               className="h-16 w-16 rounded-xl object-cover border border-[#e8e5c0]"
             />
