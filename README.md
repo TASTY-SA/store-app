@@ -4,7 +4,7 @@ Frontend del cliente para la aplicación de Food Store, construido con React, Ty
 
 ## Video de Demostración
 
-[Ver demostración en YouTube](https://youtu.be/y-FnOq9mqJU)
+[Video de explicacion proyecto](https://youtu.be/k3hljpUq8lQ)
 
 ## Requisitos Previos
 
